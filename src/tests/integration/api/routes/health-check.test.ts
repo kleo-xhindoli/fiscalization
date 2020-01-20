@@ -2,8 +2,9 @@ import request from 'supertest';
 import app, { server } from '../../../../index';
 
 describe('Integration | Health Check API', () => {
-  afterAll(async () => {
+  afterAll(async done => {
     await server.close();
+    done();
   });
 
   describe('/api/status', () => {
