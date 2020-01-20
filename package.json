@@ -1,0 +1,50 @@
+{
+  "name": "magnum",
+  "version": "1.0.0",
+  "main": "index.js",
+  "license": "MIT",
+  "scripts": {
+    "start": "nodemon --inspect",
+    "dev": "nodemon --inspect",
+    "build": "tsc",
+    "test": "NODE_ENV=test jest --maxWorkers=1 --detectOpenHandles",
+    "test:watch": "NODE_ENV=test jest --watch --forceExit --maxWorkers=1",
+    "test:unit": "NODE_ENV=test jest -c jest.config.unit.js",
+    "test:integration": "NODE_ENV=test jest -c jest.config.integration.js --maxWorkers=1"
+  },
+  "devDependencies": {
+    "@types/body-parser": "^1.17.1",
+    "@types/boom": "^7.3.0",
+    "@types/cors": "^2.8.6",
+    "@types/dotenv": "^6.1.1",
+    "@types/dotenv-safe": "^5.0.3",
+    "@types/helmet": "^0.0.44",
+    "@types/jest": "^24.0.18",
+    "@types/joi": "^14.3.3",
+    "@types/jsonwebtoken": "^8.3.4",
+    "@types/morgan": "^1.7.37",
+    "@types/node": "^12.7.11",
+    "@types/supertest": "^2.0.8",
+    "jest": "^24.9.0",
+    "nodemon": "^1.19.3",
+    "supertest": "^4.0.2",
+    "ts-jest": "^24.1.0",
+    "ts-node": "^8.4.1",
+    "typescript": "^3.6.3"
+  },
+  "dependencies": {
+    "@types/express": "^4.17.1",
+    "@types/winston": "^2.4.4",
+    "body-parser": "^1.19.0",
+    "boom": "^7.3.0",
+    "cors": "^2.8.5",
+    "dotenv-safe": "^8.1.0",
+    "express": "^4.17.1",
+    "helmet": "^3.21.1",
+    "joi": "^14.3.1",
+    "morgan": "^1.9.1",
+    "pg": "^7.17.1",
+    "reflect-metadata": "^0.1.13",
+    "winston": "^3.2.1"
+  }
+}
