@@ -1,10 +1,13 @@
 # Magnum
-## Core API Service
+## Fiscalization  Microservice
 
 ## Run locally
-1. copy `.env.example` into `.env`
-1. `yarn run docker:dev`
+* copy `.env.example` into `.env`
+* `yarn start`
 
 ## Run tests
-1. copy `.env.example` into `.env`
-1. `yarn run docker:test`
+* copy `.env.example` into `.env`
+* `yarn test` _Runs all tests_
+* `yarn test:unit` _Runs Unit tests_
+* `yarn test:integration` _Runs Integration tests_
+* `yarn test:watch` _Reruns changed tests automatically_
