@@ -4,3 +4,4 @@ dist/
 docker-compose.prod.yml
 *.log
 *.error
+.idea
