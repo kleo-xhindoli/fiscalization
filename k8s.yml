@@ -34,7 +34,7 @@ spec:
         run: ${CLUSTER_NAME}-service
     spec:
       containers:
-        - name: magnum
+        - name: glock
           image: index.docker.io/nomy/${REPO_NAME}:${CIRCLE_SHA1}
           imagePullPolicy: Always
           resources:
