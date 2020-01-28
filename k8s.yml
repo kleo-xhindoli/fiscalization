@@ -1,0 +1,70 @@
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: ${CLUSTER_NAME}-service
+    # run: lexus-${ENV}
+  name: ${CLUSTER_NAME}-service
+spec:
+  ports:
+    - port: 80
+      targetPort: 3000
+  selector:
+    run: ${CLUSTER_NAME}-service
+  sessionAffinity: None
+  type: LoadBalancer
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ${CLUSTER_NAME}-service
+spec:
+  replicas: 1
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 1
+  selector:
+    matchLabels:
+      run: ${CLUSTER_NAME}-service
+  template:
+    metadata:
+      labels:
+        run: ${CLUSTER_NAME}-service
+    spec:
+      containers:
+        - name: magnum
+          image: index.docker.io/nomy/${REPO_NAME}:${CIRCLE_SHA1}
+          imagePullPolicy: Always
+          resources:
+            requests:
+              cpu: "650m"
+              memory: "650Mi"
+          envFrom:
+            - configMapRef:
+                name: ${CLUSTER_NAME}-config
+          ports:
+            - containerPort: 3000
+          readinessProbe:
+            httpGet:
+              path: /api/status
+              port: 3000
+            initialDelaySeconds: 5
+            periodSeconds: 30
+            timeoutSeconds: 5
+            successThreshold: 1
+            failureThreshold: 10
+      imagePullSecrets:
+        - name: regcred
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: ${CLUSTER_NAME}-config
+data:
+  NODE_ENV: ${NODE_ENV}
+  API_PORT: "${API_PORT}"
+  API_BASE_PATH: ${API_BASE_PATH}
+  AUTH_SECRET: ${AUTH_SECRET}
+  AUTH_TOKEN_LIFESPAN: ${AUTH_TOKEN_LIFESPAN}

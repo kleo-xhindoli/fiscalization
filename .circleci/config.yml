@@ -1,0 +1,99 @@
+version: 2
+jobs:
+  build:
+    docker:
+      # specify the version you desire here
+      - image: circleci/node:10.16
+        environment:
+          TYPEORM_HOST: localhost
+
+    steps:
+      - checkout
+
+      # Download and cache dependencies
+      - restore_cache:
+          keys:
+            - v1-dependencies-{{ checksum "package.json" }}
+            # fallback to using the latest cache if no exact match is found
+            - v1-dependencies-
+
+      - run: yarn install
+
+      - save_cache:
+          paths:
+            - node_modules
+          key: v1-dependencies-{{ checksum "package.json" }}
+
+      # run tests!
+      - run: yarn test
+
+  push-image: &push_image
+    docker:
+      - image: circleci/buildpack-deps:stretch
+    # - image: google/cloud-sdk
+    # working_directory: ~/repo
+    working_directory: ~/code
+    steps:
+      - checkout
+      # - attach_workspace:
+      #     at: ~/project
+      - run:
+          name: Install Packages
+          command: |
+            sudo apt-get update && sudo apt-get install -y apt-transport-https
+            curl -s https://packages.cloud.google.com/apt/doc/apt-key.gpg | sudo apt-key add -
+            echo "deb https://apt.kubernetes.io/ kubernetes-xenial main" | sudo tee -a /etc/apt/sources.list.d/kubernetes.list
+            sudo apt-get update
+            sudo apt-get install -qq -y gettext wget kubectl
+            sudo wget https://github.com/digitalocean/doctl/releases/download/v1.20.1/doctl-1.20.1-linux-amd64.tar.gz -P ~/
+            sudo tar xf ~/doctl-1.20.1-linux-amd64.tar.gz  -C ~/
+            sudo mv ~/doctl /usr/local/bin
+      - run:
+          name: Setup DigitalOcean SDK
+          command: |
+            doctl auth init add  -t=${DIGITALOCEAN_AUTH}
+            doctl k8s cluster kubeconfig save ${CLUSTER_NAME}
+
+      - setup_remote_docker
+      - run:
+          name: Docker build and push
+          command: |
+            docker build . -t ${REPO_NAME}
+            docker tag ${REPO_NAME}:latest nomy/${REPO_NAME}:${CIRCLE_SHA1}
+            echo $DOCKER_PWD | docker login -u naidishuli --password-stdin
+            docker push nomy/${REPO_NAME}:${CIRCLE_SHA1}
+      - run:
+          name: Setup Kubernetes Docker Auth and Logging
+          command: |
+            git clone git@github.com:kubernetes/kube-state-metrics.git
+            export DOCKERAUTH64=$(base64 -w 0  ~/.docker/config.json)
+            envsubst < secrets.yml > patched_secrets.yml
+      - run:
+          name: Deploy to Kubernetes
+          command: |
+            envsubst < k8s.yml > patched_k8s.yml
+            kubectl apply -f patched_secrets.yml
+            kubectl apply -f patched_k8s.yml
+            kubectl rollout status deployment/${CLUSTER_NAME}-service
+
+  push-staging:
+    <<: *push_image
+
+
+#workflows:
+#  version: 2
+#  magnum_pipeline:
+#    jobs:
+#      - build
+#      - push-staging:
+#          requires:
+#            - build
+#          context: magnum-staging
+#          filters:
+#            branches:
+#              only: development
+#      - push-image:
+#          context: magnum-production
+#          filters:
+#            branches:
+#              only: master
