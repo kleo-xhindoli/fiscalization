@@ -80,18 +80,18 @@ jobs:
     <<: *push_image
 
 
-#workflows:
-#  version: 2
-#  magnum_pipeline:
-#    jobs:
-#      - build
-#      - push-staging:
-#          requires:
-#            - build
-#          context: magnum-staging
-#          filters:
-#            branches:
-#              only: development
+workflows:
+  version: 2
+  magnum_pipeline:
+    jobs:
+      - build
+      - push-staging:
+          requires:
+            - build
+          context: magnum-staging
+          filters:
+            branches:
+              only: development
 #      - push-image:
 #          context: magnum-production
 #          filters:
