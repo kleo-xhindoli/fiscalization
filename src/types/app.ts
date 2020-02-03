@@ -15,3 +15,12 @@ export interface PaginationInput {
   sort: string;
   sortDirection: 'asc' | 'desc';
 }
+
+export interface Client {
+  name: string;
+}
+
+export interface Clients {
+  [key: string]: Client;
+}
+
