@@ -1,9 +1,23 @@
 import request from 'supertest';
-import app, { server } from '../../../../index';
+import app, { initializeServer } from '../../setup-tests';
+import { Server } from 'http';
 
 describe('Integration | Health Check API', () => {
+  let server: Server | null = null;
+
+  beforeAll(async done => {
+    try {
+      server = initializeServer();
+      done();
+    } catch (e) {
+      console.error('Failed to init server!');
+      console.log(e);
+      done(e);
+    }
+  });
+
   afterAll(async done => {
-    await server.close();
+    await server?.close();
     done();
   });
 
