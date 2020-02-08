@@ -44,4 +44,22 @@ describe('Unit | Service | TCR', () => {
       expect(res.body.cashAmt).toBe(2000);
     });
   });
+
+  describe('cashBalance', () => {
+    it('registers the cash balance operation', async () => {
+      const res = await cashBalance({
+        tcrNumber: 'bb123bb123',
+        issuerNUIS: 'I12345678I',
+        balChkDatTim: '2019-09-03T14:37:31+02:00',
+        operation: 'Balance',
+        cashAmt: 2000
+      });
+
+      expect(res.header.UUID).toBeDefined();
+      expect(res.header.requestUUID).toBeDefined();
+      expect(res.header.sendDateTime).toBeDefined();
+
+      expect(res.body).toBeDefined();
+    });
+  });
 });
