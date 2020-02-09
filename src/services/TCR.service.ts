@@ -44,19 +44,3 @@ export async function cashBalance(
     },
   };
 }
-
-export async function cashBalance(
-  cashBalanceRequest: TCRCashBalanceRequest
-): Promise<TCRCashBalanceResponse> {
-  const { UUID: requestUUID, sendDateTime } = generateFiscHeaders();
-
-  // TODO: Implementation
-  return {
-    header: {
-      requestUUID,
-      sendDateTime,
-      UUID: uuidv4(),
-    },
-    body: {},
-  };
-}
