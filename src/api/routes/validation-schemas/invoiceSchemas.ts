@@ -6,6 +6,30 @@ import {
   PAYMENT_METHOD_TYPES,
 } from '../../../types';
 
+const invoiceItemSchema = joi.object({
+  name: joi.string().required(),
+  code: joi.string(),
+  unitOfMeasure: joi.string().required(),
+  quantity: joi.number().required(),
+  unitPrice: joi.number().required(),
+  rebate: joi.number(), // Percentage (e.g. 20.00)
+  rebateReducingBasePrice: joi.when('rebate', {
+    is: joi.number().required(), // when rebate has a numeric value
+    then: joi.boolean().required(),
+    otherwise: joi.forbidden(),
+  }),
+  VATRate: joi.number().required(),
+});
+
+const consumptionTaxItemsSchema = joi.object({
+  consTaxRate: joi.number().required(), // percentage (e.g. 10.00),
+  numOfItems: joi
+    .number()
+    .min(1)
+    .required(),
+  priceBefConsTax: joi.number().required(),
+});
+
 export const createInvoicePayloadSchema = {
   typeOfInv: joi
     .string()
@@ -74,4 +98,10 @@ export const createInvoicePayloadSchema = {
       country: joi.string(),
     }),
   }),
+  items: joi
+    .array()
+    .items(invoiceItemSchema)
+    .default([]),
+
+  consumptionTaxItems: joi.array().items(consumptionTaxItemsSchema),
 };
