@@ -34,6 +34,8 @@ export interface RegisterTCRResponse {
     issuerNUIS: string;
     regDateTime: string; // ISO string
     tcrOrdNum: number; // ordinal number for TCR starting at 1
+    manufacNum: string;
+    softNum: string;
   };
 }
 
