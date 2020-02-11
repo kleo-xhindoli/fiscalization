@@ -109,7 +109,7 @@ interface FiscRegisterInvoiceRequestBody extends RegisterInvoiceRequest {
   iicReference?: string;
   sameTaxItems: SameTaxGroup[];
   items: FiscInvoiceItem[];
-  consumptionTaxItems: FiscConsumptionTaxGroup[];
+  consumptionTaxItems?: FiscConsumptionTaxGroup[];
 }
 
 
@@ -146,7 +146,7 @@ export interface InvoiceItem {
   VATRate: number; // percentage of VAT (ex. 20.00 or 16.00)
 }
 
-interface FiscInvoiceItem extends InvoiceItem {
+export interface FiscInvoiceItem extends InvoiceItem {
   /**
    * if rebateReducingBasePrice == true the following
    * is calculated as: (quantity * unitPrice) - rebate
