@@ -18,10 +18,10 @@ export function calculateItemPriceBeforeVAT(
       bQty
         .times(bUnitPrice)
         .minus(rebateAmt)
-        .toPrecision(5)
+        .toFixed(5)
     );
   } else {
-    return parseFloat(bQty.times(bUnitPrice).toPrecision(5));
+    return parseFloat(bQty.times(bUnitPrice).toFixed(5));
   }
 }
 
@@ -33,7 +33,7 @@ export function calculateItemVATAmt(
   return parseFloat(
     Big(priceBeforeVAT)
       .times(vatDec)
-      .toPrecision(5)
+      .toFixed(5)
   );
 }
 
@@ -54,10 +54,10 @@ export function calculatePriceAfterVAT(
       bPriceBefore
         .minus(rebateAmt)
         .plus(bVATAmt)
-        .toPrecision(5)
+        .toFixed(5)
     );
   } else {
-    return parseFloat(bPriceBefore.plus(bVATAmt).toPrecision(5));
+    return parseFloat(bPriceBefore.plus(bVATAmt).toFixed(5));
   }
 }
 
@@ -94,7 +94,7 @@ export function calculateConsTaxAmount(
   const bPriceBefore = Big(priceBeforeTax);
   const bTaxRateDec = Big(taxRate).div(100);
 
-  return parseFloat(bPriceBefore.times(bTaxRateDec).toPrecision(5));
+  return parseFloat(bPriceBefore.times(bTaxRateDec).toFixed(5));
 }
 
 export function calculateTotVATValues(items: FiscInvoiceItem[]) {
@@ -108,8 +108,8 @@ export function calculateTotVATValues(items: FiscInvoiceItem[]) {
     bTotPrice = bTotPrice.add(Big(item.priceAfterVAT));
   }
   return {
-    totPrice: parseFloat(bTotPrice.toPrecision(5)),
-    totVATAmt: parseFloat(bTotVATAmt.toPrecision(5)),
-    totPriceWoVAT: parseFloat(bTotPriceWoVAT.toPrecision(5)),
+    totPrice: parseFloat(bTotPrice.toFixed(5)),
+    totVATAmt: parseFloat(bTotVATAmt.toFixed(5)),
+    totPriceWoVAT: parseFloat(bTotPriceWoVAT.toFixed(5)),
   };
 }
