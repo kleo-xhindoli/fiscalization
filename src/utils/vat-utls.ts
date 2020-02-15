@@ -7,6 +7,7 @@ export function calculateItemPriceBeforeVAT(
   rebate?: number,
   rebateReducingBasePrice?: boolean
 ): number {
+  // TODO: Consider the case when unitPrice includes VAT
   const bQty = Big(quantity);
   const bUnitPrice = Big(unitPrice);
 
@@ -102,9 +103,9 @@ export function calculateTotVATValues(items: FiscInvoiceItem[]) {
   let bTotPrice = Big(0);
 
   for (let item of items) {
-    bTotPriceWoVAT.add(Big(item.priceBeforeVAT));
-    bTotVATAmt.add(Big(item.VATAmount));
-    bTotPrice.add(Big(item.priceAfterVAT));
+    bTotPriceWoVAT = bTotPriceWoVAT.add(Big(item.priceBeforeVAT));
+    bTotVATAmt = bTotVATAmt.add(Big(item.VATAmount));
+    bTotPrice = bTotPrice.add(Big(item.priceAfterVAT));
   }
   return {
     totPrice: parseFloat(bTotPrice.toPrecision(5)),

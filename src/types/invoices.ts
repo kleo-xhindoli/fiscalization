@@ -64,7 +64,7 @@ export interface RegisterInvoiceRequest {
   businUnit: string; // uniq code for the business unit (different from NIPT/NUIS)
   isSubseqDeliv: boolean; // true if the invoice is being delivered not in real-time (due to soft malfunction or other)
   reverseCharge: boolean; // true if the burden for VAT falls on the consumer (dont know when this is the case)
-  badDebd: boolean; // true if the invoice cannot be collected
+  badDebt: boolean; // true if the invoice cannot be collected
 
   issuer: {
     NUIS: string;

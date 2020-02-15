@@ -69,7 +69,7 @@ export const createInvoicePayloadSchema = {
   businUnit: joi.string().required(),
   isSubseqDeliv: joi.boolean(),
   reverseCharge: joi.boolean(),
-  badDebd: joi.boolean(),
+  badDebt: joi.boolean(),
   issuer: joi
     .object({
       NUIS: joi.string().required(), // TODO: regex

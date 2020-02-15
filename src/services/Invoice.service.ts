@@ -63,6 +63,8 @@ function getFiscInvoiceRequest(
     fiscInvoiceItems
   );
 
+  // TODO: fail if totPrice >  150,000 && invoice cash
+
   return {
     header: requestHeader,
     body: {
