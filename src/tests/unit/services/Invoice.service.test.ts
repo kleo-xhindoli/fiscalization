@@ -56,7 +56,6 @@ describe('Unit | Service | Invoice', () => {
       const response = await registerInvoice(request);
       expect(response.header).toBeDefined();
       expect(response.body).toBeDefined();
-      debugger;
       expect(response.body).toMatchObject({
         badDebt: false,
         businUnit: 'bg517kw842',

@@ -40,7 +40,7 @@ export const createInvoicePayloadSchema = {
     is: true, // allow only when 'selfIssuing' is true
     then: joi
       .string()
-      .allow(SELF_ISS_TYPES)
+      .valid(SELF_ISS_TYPES)
       .required(),
     otherwise: joi.forbidden(),
   }),
@@ -63,7 +63,7 @@ export const createInvoicePayloadSchema = {
   goodsExport: joi.number(),
   paymentMeth: joi
     .string()
-    .allow(PAYMENT_METHOD_TYPES)
+    .valid(PAYMENT_METHOD_TYPES)
     .required(),
   operatorCode: joi.string().required(),
   businUnit: joi.string().required(),
