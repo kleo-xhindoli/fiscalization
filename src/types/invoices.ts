@@ -6,7 +6,9 @@ import { FiscRequestHeader, FiscResponseHeader } from './fiscalization';
 export const INVOICE_TYPE_CASH = 'C';
 export const INVOICE_TYPE_NON_CASH = 'N';
 export const INVOICE_TYPES = [INVOICE_TYPE_CASH, INVOICE_TYPE_NON_CASH];
-type InvoiceType = typeof INVOICE_TYPE_CASH | typeof INVOICE_TYPE_NON_CASH;
+export type InvoiceType =
+  | typeof INVOICE_TYPE_CASH
+  | typeof INVOICE_TYPE_NON_CASH;
 
 export const SELF_ISS_TYPE_AGREEMENT = 'S'; // The previous agreement between the parties.
 export const SELF_ISS_TYPE_DOMESTIC = 'P'; // Purchase from domestic farmers.
@@ -36,7 +38,7 @@ export const PAYMENT_METHOD_TYPES = [
   PAYMENT_METHOD_TYPE_BANK,
   PAYMENT_METHOD_TYPE_OTHER,
 ];
-type PaymentMethod =
+export type PaymentMethod =
   | typeof PAYMENT_METHOD_TYPE_CASH
   | typeof PAYMENT_METHOD_TYPE_CARD
   | typeof PAYMENT_METHOD_TYPE_CHEQUE
@@ -47,7 +49,7 @@ type PaymentMethod =
 // Request Types
 // ====================================================
 
-// What we expect from our endpoint: 
+// What we expect from our endpoint:
 export interface RegisterInvoiceRequest {
   typeOfInv: InvoiceType;
   selfIssuing: boolean;
@@ -112,7 +114,6 @@ interface FiscRegisterInvoiceRequestBody extends RegisterInvoiceRequest {
   consumptionTaxItems?: FiscConsumptionTaxGroup[];
 }
 
-
 // ====================================================
 // Response Types
 // ====================================================
@@ -129,7 +130,6 @@ export interface RegisterInvoiceResponse {
   header: FiscResponseHeader;
   body: FiscRegisterInvoiceRequestBody & FiscRegisterInvoiceResponseBody;
 }
-
 
 // ====================================================
 // Group Types
