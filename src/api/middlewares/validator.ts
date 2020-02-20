@@ -21,5 +21,5 @@ export function validateQueryParams(schema: SchemaMap) {
       return next(validationResult.error);
     }
     next();
-  }
+  };
 }
