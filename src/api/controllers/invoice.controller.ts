@@ -3,14 +3,15 @@ import { NextFn, RegisterInvoiceRequest } from '../../types';
 import { registerInvoice } from '../../services/Invoice.service';
 
 export async function handleRegisterInvoice(
-  req: any,
+  req: Request,
   res: Response,
   next: NextFn
 ) {
   try {
     const request: RegisterInvoiceRequest = req.validatedBody;
+    const { privateKey, certificate } = req;
 
-    const response = await registerInvoice(request);
+    const response = await registerInvoice(request, privateKey, certificate);
 
     res.json(response);
   } catch (e) {
@@ -19,15 +20,21 @@ export async function handleRegisterInvoice(
 }
 
 export async function handleModifyInvoice(
-  req: any,
+  req: Request,
   res: Response,
   next: NextFn
 ) {
   try {
     const request: RegisterInvoiceRequest = req.validatedBody;
     const iicRef: string = req.params.iic;
+    const { privateKey, certificate } = req;
 
-    const response = await registerInvoice(request, iicRef);
+    const response = await registerInvoice(
+      request,
+      iicRef,
+      privateKey,
+      certificate
+    );
 
     res.json(response);
   } catch (e) {

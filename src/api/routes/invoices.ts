@@ -5,6 +5,7 @@ import {
   handleRegisterInvoice,
   handleModifyInvoice,
 } from '../controllers/invoice.controller';
+import { extractKeys } from '../middlewares/keyExtractor';
 
 const router = express.Router();
 
