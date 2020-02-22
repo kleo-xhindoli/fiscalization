@@ -12,6 +12,7 @@ const wsdlUrl = `${config.fiscEndpoint}/FiscalizationService.wsdl`;
 const serviceUrl = `${config.fiscEndpoint}/`;
 const clientConfig = {
   envelopeKey: 'SOAP-ENV',
+  
   overrideRootElement: {
     namespace: '',
     xmlnsAttributes: [
