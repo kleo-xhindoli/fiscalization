@@ -9,3 +9,11 @@ export interface FiscResponseHeader {
   requestUUID: string;
 }
 
+export interface FiscRequest {
+  header: FiscRequestHeader;
+  body: { [key: string]: any };
+}
+
+export type SOAPRequestObject = {
+  [key: string]: any;
+};

@@ -1,13 +1,8 @@
-import { v4 as uuid4 } from 'uuid';
 import { SignedXml } from 'xml-crypto';
 import { ISecurity } from 'soap';
 
 function insertStr(src: string, dst: string, pos: number): string {
   return [dst.slice(0, pos), src, dst.slice(pos)].join('');
-}
-
-function generateId(): string {
-  return uuid4().replace(/-/gm, '');
 }
 
 const oasisBaseUri = 'http://docs.oasis-open.org/wss/2004/01';
@@ -18,6 +13,7 @@ export interface IWSSecurityCertOptions {
   signatureAlgorithm?: string;
   additionalReferences?: string[];
   signerOptions?: IXmlSignerOptions;
+  requestId?: string;
 }
 
 export interface IXmlSignerOptions {
@@ -31,11 +27,14 @@ export class WSSecurityCert implements ISecurity {
   private signer: any;
   private signerOptions: IXmlSignerOptions = {};
   private signatureTransformations: string[];
+  private rootElement: string;
+  private requestId = 'Request';
 
   constructor(
     privatePEM: any,
     publicP12PEM: any,
     password: any,
+    rootElement: string,
     options: IWSSecurityCertOptions = {}
   ) {
     this.publicP12PEM = publicP12PEM
@@ -45,12 +44,16 @@ export class WSSecurityCert implements ISecurity {
       .replace(/(\r\n|\n|\r)/gm, '');
 
     this.signer = new SignedXml();
+    this.rootElement = rootElement;
+
+    if (options.requestId) this.requestId = options.requestId;
+
     if (
       options.signatureAlgorithm ===
       'http://www.w3.org/2001/04/xmldsig-more#rsa-sha256'
     ) {
       this.signer.signatureAlgorithm = options.signatureAlgorithm;
-      const bodyXpath = `//*[@Id="Request"]`;
+      const bodyXpath = `//*[@Id="${this.requestId}"]`;
       this.signer.addReference(
         bodyXpath,
         [
@@ -110,9 +113,7 @@ export class WSSecurityCert implements ISecurity {
 
     const references = this.signatureTransformations;
 
-    // const bodyXpath = `//*[name(.)='${envelopeKey}:Body']`;
-    // TODO: take id as argument
-    const bodyXpath = `//*[@Id="Request"]`;
+    const bodyXpath = `//*[@Id="${this.requestId}"]`;
     if (
       !(
         this.signer.references.filter((ref: any) => ref.xpath === bodyXpath)
@@ -127,8 +128,7 @@ export class WSSecurityCert implements ISecurity {
     return insertStr(
       this.signer.getSignatureXml(),
       xmlWithSec,
-      // TODO: make this dynamic
-      xmlWithSec.indexOf('</RegisterTCRRequest')
+      xmlWithSec.indexOf(`</${this.rootElement}>`)
     );
   }
 }

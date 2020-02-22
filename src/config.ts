@@ -17,6 +17,7 @@ const apiBasePath = process.env.API_BASE_PATH as string;
 const fiscSoftwareNumber = process.env.FISCALIZATION_SOFTWARE_NUMBER as string;
 const fiscManufacturerNumber = process.env
   .FISCALIZATION_MANUFACTURER_NUMBER as string;
+const fiscEndpoint = process.env.FISCALIZATION_ENDPOINT as string;
 
 const clients: Clients = {
   [process.env.MAGNUM_API_KEY as string]: { name: 'magnum' },
@@ -28,5 +29,6 @@ export default {
   port,
   clients,
   fiscSoftwareNumber,
-  fiscManufacturerNumber
+  fiscManufacturerNumber,
+  fiscEndpoint,
 };
