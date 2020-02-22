@@ -17,13 +17,18 @@ import {
 import { generateFiscHeaders } from '../utils/fiscHeaders';
 import config from '../config';
 import uuidv4 from 'uuid/v4';
+import NodeRSA from 'node-rsa';
+import crypto from 'crypto';
 
 export async function registerInvoice(
   invoiceRequest: RegisterInvoiceRequest,
+  privateKey: string,
+  certificate: string,
   iicReference?: string
 ): Promise<RegisterInvoiceResponse> {
   const fiscInvoiceRequest = getFiscInvoiceRequest(
     invoiceRequest,
+    privateKey,
     iicReference
   );
 
@@ -44,6 +49,7 @@ export async function registerInvoice(
 
 function getFiscInvoiceRequest(
   invoiceRequest: RegisterInvoiceRequest,
+  privateKey: string,
   iicReference?: string
 ): FiscRegisterInvoiceRequest {
   const fiscInvoiceItems = getFiscInvoiceItems(invoiceRequest.items);
@@ -62,6 +68,20 @@ function getFiscInvoiceRequest(
   const { totPrice, totVATAmt, totPriceWoVAT } = calculateTotVATValues(
     fiscInvoiceItems
   );
+  const invNum = getInvNum(invoiceRequest);
+
+  const iicSignature = generateIICSignature(
+    invoiceRequest.issuer.NUIS,
+    invoiceRequest.dateTimeCreated,
+    invNum,
+    invoiceRequest.businUnit,
+    invoiceRequest.cashRegister || '',
+    config.fiscSoftwareNumber,
+    totPrice,
+    privateKey
+  );
+
+  const iic = generateIIC(iicSignature);
 
   // TODO: fail if totPrice >  150,000 && invoice cash
 
@@ -69,13 +89,13 @@ function getFiscInvoiceRequest(
     header: requestHeader,
     body: {
       ...invoiceRequest,
-      invNum: getInvNum(invoiceRequest),
+      invNum,
       totPriceWoVAT,
       totVATAmt,
       totPrice,
       softNum: config.fiscSoftwareNumber,
-      iic: generateIIC(),
-      iicSignature: generateIICSignature(),
+      iic,
+      iicSignature,
       iicReference,
       sameTaxItems,
       items: fiscInvoiceItems,
@@ -119,13 +139,39 @@ function getFiscInvoiceItems(items: InvoiceItem[]): FiscInvoiceItem[] {
   });
 }
 
-export function generateIIC() {
-  // TODO: Implement
-
-  return 'D04C13B4063D63A13B5D822A90178A7C';
+export function generateIIC(signature: string) {
+  const hash = crypto.createHash('md5');
+  hash.update(signature);
+  const digest = hash.digest('hex').toUpperCase();
+  return digest;
 }
 
-export function generateIICSignature() {
-  // TODO: Implement
-  return `404ADDB017B2DE49B0A51340A991130E670F08BC2BE854EEAAE9C3F41A2C98E1D70545690F0EFBD13511A38DB1E36E086DC253C3519E7DAF896A418BFAFCCE9836B0759B2E84713B25C39C040E35608AC85141A65D623454BAF4D0E04D69A8D77505879C1DB9552542309A110B8CB2B9885C2236C3C6D65E695DFA4CA7D6258BD9EB0749A9EE09DA237C4E1B8EE39C3CAD3E32A21F807DA0908192DADA3F9D55C4FEB3C100F97D5AA81CFE157E1A90059111E6DCD2F2AD3DB9AAA202D084144E60ADED38988C384012967EF47B548135804EF2F4542DD0971E11AA392F048836D1C7DF9014F507B79258FA9B43AA14E32196D6127FD8154C24CE0CB374677D20`;
+export function generateIICSignature(
+  issuerNuis: string,
+  dateTimeCreated: string,
+  invoiceNumber: string,
+  busiUnit: string,
+  cashRegister: string,
+  softNum: string,
+  totalPrice: number,
+  privateKey: string
+) {
+  const iicInput =
+    `${issuerNuis}` +
+    `|${dateTimeCreated}` +
+    `|${invoiceNumber}` +
+    `|${busiUnit}` +
+    `|${cashRegister}` +
+    `|${softNum}` +
+    `|${totalPrice}`;
+
+  const key = new NodeRSA(privateKey, 'private');
+  key.setOptions({ signingScheme: 'pkcs1-sha256' });
+  const buffer = Buffer.from(iicInput, 'utf8');
+  const signature = key
+    .sign(buffer)
+    .toString('hex')
+    .toUpperCase();
+
+  return signature;
 }

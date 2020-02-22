@@ -5,6 +5,7 @@ import {
   generateIICSignature,
 } from '../../../services/Invoice.service';
 import { InvoiceType, PaymentMethod } from '../../../types';
+import { exampleKey, certificate } from './keys';
 
 describe('Unit | Service | Invoice', () => {
   const request = {
@@ -53,7 +54,7 @@ describe('Unit | Service | Invoice', () => {
   };
   describe('registerInvoice', () => {
     it('should resolve with the correct RegisterInvoiceResponse', async () => {
-      const response = await registerInvoice(request);
+      const response = await registerInvoice(request, exampleKey, certificate);
       expect(response.header).toBeDefined();
       expect(response.body).toBeDefined();
       expect(response.body).toMatchObject({
@@ -110,9 +111,6 @@ describe('Unit | Service | Invoice', () => {
         totVATAmt: 71.64,
         totPrice: 469.64,
         softNum: 'abc123',
-        iic: 'D04C13B4063D63A13B5D822A90178A7C',
-        iicSignature:
-          '404ADDB017B2DE49B0A51340A991130E670F08BC2BE854EEAAE9C3F41A2C98E1D70545690F0EFBD13511A38DB1E36E086DC253C3519E7DAF896A418BFAFCCE9836B0759B2E84713B25C39C040E35608AC85141A65D623454BAF4D0E04D69A8D77505879C1DB9552542309A110B8CB2B9885C2236C3C6D65E695DFA4CA7D6258BD9EB0749A9EE09DA237C4E1B8EE39C3CAD3E32A21F807DA0908192DADA3F9D55C4FEB3C100F97D5AA81CFE157E1A90059111E6DCD2F2AD3DB9AAA202D084144E60ADED38988C384012967EF47B548135804EF2F4542DD0971E11AA392F048836D1C7DF9014F507B79258FA9B43AA14E32196D6127FD8154C24CE0CB374677D20',
         sameTaxItems: [
           {
             VATRate: 16,
@@ -128,6 +126,9 @@ describe('Unit | Service | Invoice', () => {
           },
         ],
       });
+
+      expect(response.body.iic).toBeDefined();
+      expect(response.body.iicReference).toBeDefined();
     });
 
     // TODO: test error cases
@@ -147,16 +148,25 @@ describe('Unit | Service | Invoice', () => {
 
   describe('generateIIC', () => {
     it('should calculate the IIC for the given request', () => {
-      // TODO: proper test
-      const result = generateIIC();
-      expect(result).toBe('D04C13B4063D63A13B5D822A90178A7C');
+      const result = generateIIC(
+        '404ADDB017B2DE49B0A51340A991130E670F08BC2BE854EEAAE9C3F41A2C98E1D70545690F0EFBD13511A38DB1E36E086DC253C3519E7DAF896A418BFAFCCE9836B0759B2E84713B25C39C040E35608AC85141A65D623454BAF4D0E04D69A8D77505879C1DB9552542309A110B8CB2B9885C2236C3C6D65E695DFA4CA7D6258BD9EB0749A9EE09DA237C4E1B8EE39C3CAD3E32A21F807DA0908192DADA3F9D55C4FEB3C100F97D5AA81CFE157E1A90059111E6DCD2F2AD3DB9AAA202D084144E60ADED38988C384012967EF47B548135804EF2F4542DD0971E11AA392F048836D1C7DF9014F507B79258FA9B43AA14E32196D6127FD8154C24CE0CB374677D20'
+      );
+      expect(result).toBe('E88F6627C32723F4FCB8D686EA77219A');
     });
   });
 
   describe('generateIICSignature', () => {
     it('should calculate the IICSignature for the given request', () => {
-      // TODO: proper test
-      const result = generateIICSignature();
+      const result = generateIICSignature(
+        'I12345678I',
+        '2019-06-12T17:05:43+02:00',
+        '9952',
+        'bb123bb123',
+        'cc123cc123',
+        'ss123ss123',
+        99.01,
+        exampleKey
+      );
       expect(result).toBe(
         `404ADDB017B2DE49B0A51340A991130E670F08BC2BE854EEAAE9C3F41A2C98E1D70545690F0EFBD13511A38DB1E36E086DC253C3519E7DAF896A418BFAFCCE9836B0759B2E84713B25C39C040E35608AC85141A65D623454BAF4D0E04D69A8D77505879C1DB9552542309A110B8CB2B9885C2236C3C6D65E695DFA4CA7D6258BD9EB0749A9EE09DA237C4E1B8EE39C3CAD3E32A21F807DA0908192DADA3F9D55C4FEB3C100F97D5AA81CFE157E1A90059111E6DCD2F2AD3DB9AAA202D084144E60ADED38988C384012967EF47B548135804EF2F4542DD0971E11AA392F048836D1C7DF9014F507B79258FA9B43AA14E32196D6127FD8154C24CE0CB374677D20`
       );
