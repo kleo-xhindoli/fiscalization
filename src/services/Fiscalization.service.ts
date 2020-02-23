@@ -57,6 +57,7 @@ function transformRegisterTCRRequest(
       BusinUnit: request.body.businUnit,
       IssuerNUIS: request.body.issuerNUIS,
       ManufacNum: request.body.manufacNum,
+      // TODO: remove after rebase
       RegDateTime: formatToTimeZone(
         request.body.regDateTime,
         'YYYY-MM-DDTHH:mm:ss[Z]',
