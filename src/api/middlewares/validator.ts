@@ -27,11 +27,11 @@ export function validateQueryParams(schema: SchemaMap) {
 
 export function validateCertificates(req: any, res: Response, next: NextFn) {
   const certificatesSchema = {
-    payload: object(),
+    payload: object().required(),
     certificates: object({
       privateKey: string().required(),
       certificate: string().required(),
-    }),
+    }).required(),
   };
   const validationResult = validate(req.body, certificatesSchema);
   if (validationResult.error) {
