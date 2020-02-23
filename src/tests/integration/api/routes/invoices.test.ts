@@ -1,6 +1,7 @@
 import request from 'supertest';
 import app, { initializeServer } from '../../setup-tests';
 import { Server } from 'http';
+import { privateKey, certificate } from '../../../__test-data__/keys';
 
 const payload = {
   badDebt: false,
@@ -75,12 +76,26 @@ describe('Integration | Invoice routes', () => {
       expect(res.status).toBe(401);
     });
 
-    it('should register an invoice if valid data is provided', async () => {
+    it('should respond with 403 if no certificates are provided', async () => {
       const res = await request(app)
         .post('/api/invoices/register')
         .set({ 'X-Api-Key': MAGNUM_API_KEY })
         .send({
           ...payload,
+        });
+      expect(res.status).toBe(403);
+    });
+
+    it('should register an invoice if valid data is provided', async () => {
+      const res = await request(app)
+        .post('/api/invoices/register')
+        .set({ 'X-Api-Key': MAGNUM_API_KEY })
+        .send({
+          payload,
+          certificates: {
+            privateKey,
+            certificate,
+          },
         });
       expect(res.status).toBe(200);
       // header
@@ -143,9 +158,9 @@ describe('Integration | Invoice routes', () => {
         totVATAmt: 71.64,
         totPrice: 469.64,
         softNum: 'abc123',
-        iic: 'D04C13B4063D63A13B5D822A90178A7C',
+        iic: '584A03AA1473E8F55ED1C6FA679B912F',
         iicSignature:
-          '404ADDB017B2DE49B0A51340A991130E670F08BC2BE854EEAAE9C3F41A2C98E1D70545690F0EFBD13511A38DB1E36E086DC253C3519E7DAF896A418BFAFCCE9836B0759B2E84713B25C39C040E35608AC85141A65D623454BAF4D0E04D69A8D77505879C1DB9552542309A110B8CB2B9885C2236C3C6D65E695DFA4CA7D6258BD9EB0749A9EE09DA237C4E1B8EE39C3CAD3E32A21F807DA0908192DADA3F9D55C4FEB3C100F97D5AA81CFE157E1A90059111E6DCD2F2AD3DB9AAA202D084144E60ADED38988C384012967EF47B548135804EF2F4542DD0971E11AA392F048836D1C7DF9014F507B79258FA9B43AA14E32196D6127FD8154C24CE0CB374677D20',
+          '1E5CBAD44DE4CA471FDBCCBCBB610B6B8621AD5274DAA2FC4E198D9998FE348D7F3D5DFB5929CFC6D40D16A57187E46C41EB6DC882EAADE127903E3D758609F3F10E1940049D47D304EE3BBD2CC6FDF09689751C9BDAD449E60987869DF32EE03A481B2D04989EF5EAF7360C6353F4611D267DBB06C324007B4524CA91E83B1DB49C410D211B77CE809D0EBEF1E9190C92BDD94B9D75F8417FB1E1F7E89138B568C677DC0F81E3DB539804909639E2815DE91FF3BD22D2A605ECC7EEB1BCE4AA139AF6B861DADA9A91AC2CAEC7327505D9678E9004A7B45C814965AB1395C2BBA0C1A85490EEBE2C9F845E559A34CE8FFDE9BBFAD598F6BFDD43233CE35D27B9',
         sameTaxItems: [
           {
             VATRate: 16,
@@ -169,9 +184,15 @@ describe('Integration | Invoice routes', () => {
         .post('/api/invoices/register')
         .set({ 'X-Api-Key': MAGNUM_API_KEY })
         .send({
-          ...payload,
-          typeOfInv: 'N',
-          cashRegister: undefined,
+          payload: {
+            ...payload,
+            typeOfInv: 'N',
+            cashRegister: undefined,
+          },
+          certificates: {
+            privateKey,
+            certificate,
+          },
         });
       expect(res.status).toBe(200);
       expect(res.body.header).toBeDefined();
@@ -184,11 +205,17 @@ describe('Integration | Invoice routes', () => {
         .post('/api/invoices/register')
         .set({ 'X-Api-Key': MAGNUM_API_KEY })
         .send({
-          ...payload,
-          selfIssuing: true,
-          typeOfSelfIss: 'P',
-          buyer: {
-            ...payload.issuer,
+          payload: {
+            ...payload,
+            selfIssuing: true,
+            typeOfSelfIss: 'P',
+            buyer: {
+              ...payload.issuer,
+            },
+          },
+          certificates: {
+            privateKey,
+            certificate,
           },
         });
       expect(res.status).toBe(200);
@@ -201,8 +228,14 @@ describe('Integration | Invoice routes', () => {
         .post('/api/invoices/register')
         .set({ 'X-Api-Key': MAGNUM_API_KEY })
         .send({
-          ...payload,
-          typeOfInv: undefined,
+          payload: {
+            ...payload,
+            typeOfInv: undefined,
+          },
+          certificates: {
+            privateKey,
+            certificate,
+          },
         });
       expect(res.status).toBe(400);
 
@@ -210,8 +243,14 @@ describe('Integration | Invoice routes', () => {
         .post('/api/invoices/register')
         .set({ 'X-Api-Key': MAGNUM_API_KEY })
         .send({
-          ...payload,
-          dateTimeCreated: undefined,
+          payload: {
+            ...payload,
+            dateTimeCreated: undefined,
+          },
+          certificates: {
+            privateKey,
+            certificate,
+          },
         });
       expect(res.status).toBe(400);
 
@@ -219,8 +258,14 @@ describe('Integration | Invoice routes', () => {
         .post('/api/invoices/register')
         .set({ 'X-Api-Key': MAGNUM_API_KEY })
         .send({
-          ...payload,
-          invOrdNum: undefined,
+          payload: {
+            ...payload,
+            invOrdNum: undefined,
+          },
+          certificates: {
+            privateKey,
+            certificate,
+          },
         });
       expect(res.status).toBe(400);
 
@@ -228,8 +273,14 @@ describe('Integration | Invoice routes', () => {
         .post('/api/invoices/register')
         .set({ 'X-Api-Key': MAGNUM_API_KEY })
         .send({
-          ...payload,
-          paymentMeth: undefined,
+          payload: {
+            ...payload,
+            paymentMeth: undefined,
+          },
+          certificates: {
+            privateKey,
+            certificate,
+          },
         });
       expect(res.status).toBe(400);
 
@@ -237,8 +288,14 @@ describe('Integration | Invoice routes', () => {
         .post('/api/invoices/register')
         .set({ 'X-Api-Key': MAGNUM_API_KEY })
         .send({
-          ...payload,
-          operatorCode: undefined,
+          payload: {
+            ...payload,
+            operatorCode: undefined,
+          },
+          certificates: {
+            privateKey,
+            certificate,
+          },
         });
       expect(res.status).toBe(400);
 
@@ -246,8 +303,14 @@ describe('Integration | Invoice routes', () => {
         .post('/api/invoices/register')
         .set({ 'X-Api-Key': MAGNUM_API_KEY })
         .send({
-          ...payload,
-          businUnit: undefined,
+          payload: {
+            ...payload,
+            businUnit: undefined,
+          },
+          certificates: {
+            privateKey,
+            certificate,
+          },
         });
       expect(res.status).toBe(400);
 
@@ -255,8 +318,14 @@ describe('Integration | Invoice routes', () => {
         .post('/api/invoices/register')
         .set({ 'X-Api-Key': MAGNUM_API_KEY })
         .send({
-          ...payload,
-          issuer: undefined,
+          payload: {
+            ...payload,
+            issuer: undefined,
+          },
+          certificates: {
+            privateKey,
+            certificate,
+          },
         });
       expect(res.status).toBe(400);
     });
@@ -267,9 +336,15 @@ describe('Integration | Invoice routes', () => {
         .post('/api/invoices/register')
         .set({ 'X-Api-Key': MAGNUM_API_KEY })
         .send({
-          ...payload,
-          selfIssuing: true,
-          typeOfSelfIss: undefined,
+          payload: {
+            ...payload,
+            selfIssuing: true,
+            typeOfSelfIss: undefined,
+          },
+          certificates: {
+            privateKey,
+            certificate,
+          },
         });
 
       expect(res.status).toBe(400);
@@ -281,9 +356,15 @@ describe('Integration | Invoice routes', () => {
         .post('/api/invoices/register')
         .set({ 'X-Api-Key': MAGNUM_API_KEY })
         .send({
-          ...payload,
-          selfIssuing: true,
-          typeOfSelfIss: 'Q',
+          payload: {
+            ...payload,
+            selfIssuing: true,
+            typeOfSelfIss: 'Q',
+          },
+          certificates: {
+            privateKey,
+            certificate,
+          },
         });
 
       expect(res.status).toBe(400);
@@ -295,9 +376,15 @@ describe('Integration | Invoice routes', () => {
         .post('/api/invoices/register')
         .set({ 'X-Api-Key': MAGNUM_API_KEY })
         .send({
-          ...payload,
-          selfIssuing: true,
-          typeOfSelfIss: 'S',
+          payload: {
+            ...payload,
+            selfIssuing: true,
+            typeOfSelfIss: 'S',
+          },
+          certificates: {
+            privateKey,
+            certificate,
+          },
         });
       expect(res.status).toBe(400);
     });
@@ -308,8 +395,14 @@ describe('Integration | Invoice routes', () => {
         .post('/api/invoices/register')
         .set({ 'X-Api-Key': MAGNUM_API_KEY })
         .send({
-          ...payload,
-          dateTimeCreated: new Date().toUTCString(),
+          payload: {
+            ...payload,
+            dateTimeCreated: new Date().toUTCString(),
+          },
+          certificates: {
+            privateKey,
+            certificate,
+          },
         });
       expect(res.status).toBe(400);
     });
@@ -319,8 +412,14 @@ describe('Integration | Invoice routes', () => {
         .post('/api/invoices/register')
         .set({ 'X-Api-Key': MAGNUM_API_KEY })
         .send({
-          ...payload,
-          invOrdNum: 0,
+          payload: {
+            ...payload,
+            invOrdNum: 0,
+          },
+          certificates: {
+            privateKey,
+            certificate,
+          },
         });
       expect(res.status).toBe(400);
     });
@@ -331,9 +430,15 @@ describe('Integration | Invoice routes', () => {
         .post('/api/invoices/register')
         .set({ 'X-Api-Key': MAGNUM_API_KEY })
         .send({
-          ...payload,
-          typeOfInv: 'C',
-          cashRegister: undefined,
+          payload: {
+            ...payload,
+            typeOfInv: 'C',
+            cashRegister: undefined,
+          },
+          certificates: {
+            privateKey,
+            certificate,
+          },
         });
       expect(res.status).toBe(400);
     });
@@ -344,8 +449,14 @@ describe('Integration | Invoice routes', () => {
         .post('/api/invoices/register')
         .set({ 'X-Api-Key': MAGNUM_API_KEY })
         .send({
-          ...payload,
-          paymentMeth: 'F',
+          payload: {
+            ...payload,
+            paymentMeth: 'F',
+          },
+          certificates: {
+            privateKey,
+            certificate,
+          },
         });
       expect(res.status).toBe(400);
     });
@@ -356,9 +467,15 @@ describe('Integration | Invoice routes', () => {
         .post('/api/invoices/register')
         .set({ 'X-Api-Key': MAGNUM_API_KEY })
         .send({
-          ...payload,
-          selfIssuing: true,
-          buyer: undefined,
+          payload: {
+            ...payload,
+            selfIssuing: true,
+            buyer: undefined,
+          },
+          certificates: {
+            privateKey,
+            certificate,
+          },
         });
       expect(res.status).toBe(400);
     });
@@ -370,19 +487,25 @@ describe('Integration | Invoice routes', () => {
         .post('/api/invoices/register')
         .set({ 'X-Api-Key': MAGNUM_API_KEY })
         .send({
-          ...payload,
-          items: [
-            {
-              code: '501234567890',
-              // name: 'Fanta',
-              quantity: 1,
-              rebate: 0,
-              rebateReducingBasePrice: true,
-              unitOfMeasure: 'piece',
-              unitPrice: 199,
-              VATRate: 20.0,
-            },
-          ],
+          payload: {
+            ...payload,
+            items: [
+              {
+                code: '501234567890',
+                // name: 'Fanta',
+                quantity: 1,
+                rebate: 0,
+                rebateReducingBasePrice: true,
+                unitOfMeasure: 'piece',
+                unitPrice: 199,
+                VATRate: 20.0,
+              },
+            ],
+          },
+          certificates: {
+            privateKey,
+            certificate,
+          },
         });
       expect(res.status).toBe(400);
 
@@ -390,19 +513,25 @@ describe('Integration | Invoice routes', () => {
         .post('/api/invoices/register')
         .set({ 'X-Api-Key': MAGNUM_API_KEY })
         .send({
-          ...payload,
-          items: [
-            {
-              code: '501234567890',
-              name: 'Fanta',
-              // quantity: 1,
-              rebate: 0,
-              rebateReducingBasePrice: true,
-              unitOfMeasure: 'piece',
-              unitPrice: 199,
-              VATRate: 20.0,
-            },
-          ],
+          payload: {
+            ...payload,
+            items: [
+              {
+                code: '501234567890',
+                name: 'Fanta',
+                // quantity: 1,
+                rebate: 0,
+                rebateReducingBasePrice: true,
+                unitOfMeasure: 'piece',
+                unitPrice: 199,
+                VATRate: 20.0,
+              },
+            ],
+          },
+          certificates: {
+            privateKey,
+            certificate,
+          },
         });
       expect(res.status).toBe(400);
 
@@ -410,19 +539,25 @@ describe('Integration | Invoice routes', () => {
         .post('/api/invoices/register')
         .set({ 'X-Api-Key': MAGNUM_API_KEY })
         .send({
-          ...payload,
-          items: [
-            {
-              code: '501234567890',
-              name: 'Fanta',
-              quantity: 1,
-              rebate: 0,
-              rebateReducingBasePrice: true,
-              unitOfMeasure: 'piece',
-              // unitPrice: 199,
-              VATRate: 20.0,
-            },
-          ],
+          payload: {
+            ...payload,
+            items: [
+              {
+                code: '501234567890',
+                name: 'Fanta',
+                quantity: 1,
+                rebate: 0,
+                rebateReducingBasePrice: true,
+                unitOfMeasure: 'piece',
+                // unitPrice: 199,
+                VATRate: 20.0,
+              },
+            ],
+          },
+          certificates: {
+            privateKey,
+            certificate,
+          },
         });
       expect(res.status).toBe(400);
 
@@ -430,19 +565,25 @@ describe('Integration | Invoice routes', () => {
         .post('/api/invoices/register')
         .set({ 'X-Api-Key': MAGNUM_API_KEY })
         .send({
-          ...payload,
-          items: [
-            {
-              code: '501234567890',
-              name: 'Fanta',
-              quantity: 1,
-              rebate: 0,
-              rebateReducingBasePrice: true,
-              unitOfMeasure: 'piece',
-              unitPrice: 199,
-              // VATRate: 20.0,
-            },
-          ],
+          payload: {
+            ...payload,
+            items: [
+              {
+                code: '501234567890',
+                name: 'Fanta',
+                quantity: 1,
+                rebate: 0,
+                rebateReducingBasePrice: true,
+                unitOfMeasure: 'piece',
+                unitPrice: 199,
+                // VATRate: 20.0,
+              },
+            ],
+          },
+          certificates: {
+            privateKey,
+            certificate,
+          },
         });
       expect(res.status).toBe(400);
     });
@@ -453,19 +594,25 @@ describe('Integration | Invoice routes', () => {
         .post('/api/invoices/register')
         .set({ 'X-Api-Key': MAGNUM_API_KEY })
         .send({
-          ...payload,
-          items: [
-            {
-              code: '501234567890',
-              name: 'Fanta',
-              quantity: 1,
-              rebate: 20,
-              rebateReducingBasePrice: undefined,
-              unitOfMeasure: 'piece',
-              unitPrice: 199,
-              VATRate: 20.0,
-            },
-          ],
+          payload: {
+            ...payload,
+            items: [
+              {
+                code: '501234567890',
+                name: 'Fanta',
+                quantity: 1,
+                rebate: 20,
+                rebateReducingBasePrice: undefined,
+                unitOfMeasure: 'piece',
+                unitPrice: 199,
+                VATRate: 20.0,
+              },
+            ],
+          },
+          certificates: {
+            privateKey,
+            certificate,
+          },
         });
       expect(res.status).toBe(400);
     });
@@ -476,19 +623,25 @@ describe('Integration | Invoice routes', () => {
         .post('/api/invoices/register')
         .set({ 'X-Api-Key': MAGNUM_API_KEY })
         .send({
-          ...payload,
-          items: [
-            {
-              code: '501234567890',
-              name: 'Fanta',
-              quantity: 1,
-              rebate: undefined,
-              rebateReducingBasePrice: true,
-              unitOfMeasure: 'piece',
-              unitPrice: 199,
-              VATRate: 20.0,
-            },
-          ],
+          payload: {
+            ...payload,
+            items: [
+              {
+                code: '501234567890',
+                name: 'Fanta',
+                quantity: 1,
+                rebate: undefined,
+                rebateReducingBasePrice: true,
+                unitOfMeasure: 'piece',
+                unitPrice: 199,
+                VATRate: 20.0,
+              },
+            ],
+          },
+          certificates: {
+            privateKey,
+            certificate,
+          },
         });
       expect(res.status).toBe(400);
     });
@@ -500,13 +653,19 @@ describe('Integration | Invoice routes', () => {
         .post('/api/invoices/register')
         .set({ 'X-Api-Key': MAGNUM_API_KEY })
         .send({
-          ...payload,
-          consumptionTaxItems: [
-            {
-              consTaxRate: 20.0,
-              numOfItems: 1,
-            },
-          ],
+          payload: {
+            ...payload,
+            consumptionTaxItems: [
+              {
+                consTaxRate: 20.0,
+                numOfItems: 1,
+              },
+            ],
+          },
+          certificates: {
+            privateKey,
+            certificate,
+          },
         });
       expect(res.status).toBe(400);
 
@@ -514,13 +673,19 @@ describe('Integration | Invoice routes', () => {
         .post('/api/invoices/register')
         .set({ 'X-Api-Key': MAGNUM_API_KEY })
         .send({
-          ...payload,
-          consumptionTaxItems: [
-            {
-              consTaxRate: 20.0,
-              priceBefConsTax: 14.0,
-            },
-          ],
+          payload: {
+            ...payload,
+            consumptionTaxItems: [
+              {
+                consTaxRate: 20.0,
+                priceBefConsTax: 14.0,
+              },
+            ],
+          },
+          certificates: {
+            privateKey,
+            certificate,
+          },
         });
       expect(res.status).toBe(400);
 
@@ -528,13 +693,19 @@ describe('Integration | Invoice routes', () => {
         .post('/api/invoices/register')
         .set({ 'X-Api-Key': MAGNUM_API_KEY })
         .send({
-          ...payload,
-          consumptionTaxItems: [
-            {
-              numOfItems: 1,
-              priceBefConsTax: 14.0,
-            },
-          ],
+          payload: {
+            ...payload,
+            consumptionTaxItems: [
+              {
+                numOfItems: 1,
+                priceBefConsTax: 14.0,
+              },
+            ],
+          },
+          certificates: {
+            privateKey,
+            certificate,
+          },
         });
       expect(res.status).toBe(400);
     });
@@ -544,14 +715,20 @@ describe('Integration | Invoice routes', () => {
         .post('/api/invoices/register')
         .set({ 'X-Api-Key': MAGNUM_API_KEY })
         .send({
-          ...payload,
-          consumptionTaxItems: [
-            {
-              consTaxRate: 20.0,
-              numOfItems: 1,
-              priceBefConsTax: 14.0,
-            },
-          ],
+          payload: {
+            ...payload,
+            consumptionTaxItems: [
+              {
+                consTaxRate: 20.0,
+                numOfItems: 1,
+                priceBefConsTax: 14.0,
+              },
+            ],
+          },
+          certificates: {
+            privateKey,
+            certificate,
+          },
         });
       expect(res.status).toBe(200);
       expect(res.body.body.consumptionTaxItems).toMatchObject([

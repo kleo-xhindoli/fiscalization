@@ -5,7 +5,7 @@ import {
   generateIICSignature,
 } from '../../../services/Invoice.service';
 import { InvoiceType, PaymentMethod } from '../../../types';
-import { exampleKey, certificate } from './keys';
+import { exampleKey, privateKey, certificate } from '../../__test-data__/keys';
 
 describe('Unit | Service | Invoice', () => {
   const request = {
@@ -54,7 +54,7 @@ describe('Unit | Service | Invoice', () => {
   };
   describe('registerInvoice', () => {
     it('should resolve with the correct RegisterInvoiceResponse', async () => {
-      const response = await registerInvoice(request, exampleKey, certificate);
+      const response = await registerInvoice(request, privateKey, certificate);
       expect(response.header).toBeDefined();
       expect(response.body).toBeDefined();
       expect(response.body).toMatchObject({
@@ -127,8 +127,10 @@ describe('Unit | Service | Invoice', () => {
         ],
       });
 
-      expect(response.body.iic).toBeDefined();
-      expect(response.body.iicReference).toBeDefined();
+      expect(response.body.iic).toBe('4C27649BE4EAACA82C8EB1CDAB274AEC');
+      expect(response.body.iicSignature).toBe(
+        '13900A4812560C5EE549044BC13B4FC90AFB6A76B10635788E689FAF319AAFA39B6BB28ED59E7E8278646CD8EDFF43F87131F610F2DE761DBCE4030AE0EC7BB3C700620F247B7D8F890D9EA7C80726A71294AF0AD832E6ED5143D6AAE0D146E5FE547ADB257FA5643DEBF07812D612E2596DB26F22D75A8DE7387D52A2AB273BCFA72B625247FCC25F00A6DAC0E83BA4D5863032C86CDC9A752E95D220C1E8C671B601CA6BCA335EC436A6C7C7CEB15A58773F2A03E25FFC03BF310DC5C4B94495B5BCBECAC7C79092BFE21ADA7BF87432A4D645099FAD84AA18D80A53A2CB34F0B337AB600C909C0F9CF86B184A7E4BB468F0D96F6A6896C567640A90900D1B'
+      );
     });
 
     // TODO: test error cases
