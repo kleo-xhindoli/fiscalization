@@ -1,6 +1,7 @@
 import { Request, Response } from 'express';
 import { NextFn, RegisterInvoiceRequest } from '../../types';
 import { registerInvoice } from '../../services/Invoice.service';
+import { toCentralEuropeanTimezone } from '../../utils/date-utils';
 
 export async function handleRegisterInvoice(
   req: Request,
@@ -9,6 +10,10 @@ export async function handleRegisterInvoice(
 ) {
   try {
     const request: RegisterInvoiceRequest = req.validatedBody;
+    request.dateTimeCreated = toCentralEuropeanTimezone(
+      request.dateTimeCreated
+    );
+
     const { privateKey, certificate } = req;
 
     const response = await registerInvoice(request, privateKey, certificate);
@@ -27,6 +32,9 @@ export async function handleModifyInvoice(
   try {
     const request: RegisterInvoiceRequest = req.validatedBody;
     const iicRef: string = req.params.iic;
+    request.dateTimeCreated = toCentralEuropeanTimezone(
+      request.dateTimeCreated
+    );
     const { privateKey, certificate } = req;
 
     const response = await registerInvoice(
