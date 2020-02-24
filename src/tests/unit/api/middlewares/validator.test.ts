@@ -3,6 +3,7 @@ import joi from 'joi';
 import {
   validateBody,
   validateQueryParams,
+  validateCertificates,
 } from '../../../../api/middlewares/validator';
 
 const nextFn = jest.fn();
@@ -208,6 +209,139 @@ describe('Unit | Middleware | Validator', () => {
         ...req.query,
         filter: 'createdBy',
       });
+    });
+  });
+
+  describe('validateCertificates', () => {
+    beforeEach(() => {
+      nextFn.mockClear();
+      req = {
+        query: {
+          page: 23,
+          sort: 'title',
+          limit: 90,
+        },
+      };
+      res = {};
+    });
+
+    it(`calls next with no arguments when the rquest contains the certificates 
+      and payload`, () => {
+      req = {
+        body: {
+          payload: {},
+          certificates: {
+            privateKey: 'Test',
+            certificate: 'Test',
+          },
+        },
+      };
+
+      validateCertificates(req, res, nextFn);
+
+      expect(nextFn.mock.calls.length).toBe(1);
+      expect(nextFn.mock.calls[0][0]).toBeUndefined();
+    });
+
+    it(`sets the privateKey and certificate properties in the request object`, () => {
+      req = {
+        body: {
+          payload: {},
+          certificates: {
+            privateKey: 'Test',
+            certificate: 'Cert',
+          },
+        },
+      };
+
+      validateCertificates(req, res, nextFn);
+
+      expect(req.privateKey).toBe('Test');
+      expect(req.certificate).toBe('Cert');
+    });
+
+    it(`sets the body of the request to be the payload after validation`, () => {
+      req = {
+        body: {
+          payload: {
+            example: 'test',
+            two: 2,
+          },
+          certificates: {
+            privateKey: 'Test',
+            certificate: 'Cert',
+          },
+        },
+      };
+
+      validateCertificates(req, res, nextFn);
+
+      expect(req.body).toMatchObject({
+        example: 'test',
+        two: 2,
+      });
+    });
+
+    it(`calls next with an argument when the certificates property is missing`, () => {
+      req = {
+        body: {
+          payload: {},
+        },
+      };
+
+      validateCertificates(req, res, nextFn);
+
+      expect(nextFn.mock.calls.length).toBe(1);
+      expect(nextFn.mock.calls[0][0]).toBeDefined();
+    });
+
+    it(`calls next with an argument when the payload property is missing`, () => {
+      req = {
+        body: {
+          certificates: {
+            privateKey: 'Test',
+            certificate: 'Cert',
+          },
+        },
+      };
+
+      validateCertificates(req, res, nextFn);
+
+      expect(nextFn.mock.calls.length).toBe(1);
+      expect(nextFn.mock.calls[0][0]).toBeDefined();
+    });
+
+    it(`calls next with an argument when the certificate prop is missing`, () => {
+      req = {
+        body: {
+          payload: {},
+          certificates: {
+            certificate: 'Cert',
+          },
+        },
+      };
+
+      validateCertificates(req, res, nextFn);
+
+      expect(nextFn.mock.calls.length).toBe(1);
+      expect(nextFn.mock.calls[0][0]).toBeDefined();
+
+    });
+    it(`calls next with an argument when the certificate prop is missing`, () => {
+      req = {
+        body: {
+          payload: {},
+          certificates: {
+            privateKey: 'Key',
+          },
+        },
+      };
+
+      validateCertificates(req, res, nextFn);
+
+      expect(nextFn.mock.calls.length).toBe(1);
+      expect(nextFn.mock.calls[0][0]).toBeDefined();
+
     });
   });
 });

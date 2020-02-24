@@ -1,6 +1,7 @@
 import request from 'supertest';
 import app, { initializeServer } from '../../setup-tests';
 import { Server } from 'http';
+import { privateKey, certificate } from '../../../__test-data__/keys';
 
 import add from 'date-fns/add';
 
@@ -30,10 +31,16 @@ describe('Integration | TCR Routes', () => {
       const res = await request(app)
         .post('/api/tcrs/registerTCR')
         .send({
-          businUnit: 'bb123bb123',
-          issuerNUIS: 'I12345678I',
-          regDateTime: '2019-09-03T14:37:31+02:00',
-          tcrOrdNum: 1,
+          payload: {
+            businUnit: 'bb123bb123',
+            issuerNUIS: 'I12345678I',
+            regDateTime: '2019-09-03T14:37:31+02:00',
+            tcrOrdNum: 1,
+          },
+          certificates: {
+            privateKey,
+            certificate,
+          },
         });
 
       expect(res.status).toBe(401);
@@ -44,10 +51,16 @@ describe('Integration | TCR Routes', () => {
         .post('/api/tcrs/registerTCR')
         .set({ 'X-Api-Key': MAGNUM_API_KEY })
         .send({
-          businUnit: 'bb123bb123',
-          issuerNUIS: 'I12345678I',
-          regDateTime: '2019-09-03T14:37:31+02:00',
-          tcrOrdNum: 1,
+          payload: {
+            businUnit: 'bb123bb123',
+            issuerNUIS: 'I12345678I',
+            regDateTime: '2019-09-03T14:37:31+02:00',
+            tcrOrdNum: 1,
+          },
+          certificates: {
+            privateKey,
+            certificate,
+          },
         });
 
       expect(res.status).toBe(200);
@@ -69,9 +82,15 @@ describe('Integration | TCR Routes', () => {
         .post('/api/tcrs/registerTCR')
         .set({ 'X-Api-Key': MAGNUM_API_KEY })
         .send({
-          issuerNUIS: 'I12345678I',
-          regDateTime: '2019-09-03T14:37:31+02:00',
-          tcrOrdNum: 1,
+          payload: {
+            issuerNUIS: 'I12345678I',
+            regDateTime: '2019-09-03T14:37:31+02:00',
+            tcrOrdNum: 1,
+          },
+          certificates: {
+            privateKey,
+            certificate,
+          },
         });
 
       expect(res.status).toBe(400);
@@ -80,9 +99,15 @@ describe('Integration | TCR Routes', () => {
         .post('/api/tcrs/registerTCR')
         .set({ 'X-Api-Key': MAGNUM_API_KEY })
         .send({
-          businUnit: 'bb123bb123',
-          regDateTime: '2019-09-03T14:37:31+02:00',
-          tcrOrdNum: 1,
+          payload: {
+            businUnit: 'bb123bb123',
+            regDateTime: '2019-09-03T14:37:31+02:00',
+            tcrOrdNum: 1,
+          },
+          certificates: {
+            privateKey,
+            certificate,
+          },
         });
 
       expect(res.status).toBe(400);
@@ -91,9 +116,15 @@ describe('Integration | TCR Routes', () => {
         .post('/api/tcrs/registerTCR')
         .set({ 'X-Api-Key': MAGNUM_API_KEY })
         .send({
-          businUnit: 'bb123bb123',
-          issuerNUIS: 'I12345678I',
-          tcrOrdNum: 1,
+          payload: {
+            businUnit: 'bb123bb123',
+            issuerNUIS: 'I12345678I',
+            tcrOrdNum: 1,
+          },
+          certificates: {
+            privateKey,
+            certificate,
+          },
         });
 
       expect(res.status).toBe(400);
@@ -102,9 +133,15 @@ describe('Integration | TCR Routes', () => {
         .post('/api/tcrs/registerTCR')
         .set({ 'X-Api-Key': MAGNUM_API_KEY })
         .send({
-          businUnit: 'bb123bb123',
-          issuerNUIS: 'I12345678I',
-          regDateTime: '2019-09-03T14:37:31+02:00',
+          payload: {
+            businUnit: 'bb123bb123',
+            issuerNUIS: 'I12345678I',
+            regDateTime: '2019-09-03T14:37:31+02:00',
+          },
+          certificates: {
+            privateKey,
+            certificate,
+          },
         });
 
       expect(res.status).toBe(400);
@@ -115,10 +152,16 @@ describe('Integration | TCR Routes', () => {
         .post('/api/tcrs/registerTCR')
         .set({ 'X-Api-Key': MAGNUM_API_KEY })
         .send({
-          businUnit: 'bb123bb123',
-          issuerNUIS: 'I12345678I',
-          regDateTime: new Date().toUTCString(),
-          tcrOrdNum: 1,
+          payload: {
+            businUnit: 'bb123bb123',
+            issuerNUIS: 'I12345678I',
+            regDateTime: new Date().toUTCString(),
+            tcrOrdNum: 1,
+          },
+          certificates: {
+            privateKey,
+            certificate,
+          },
         });
 
       expect(res.status).toBe(400);
@@ -130,10 +173,16 @@ describe('Integration | TCR Routes', () => {
         .post('/api/tcrs/registerTCR')
         .set({ 'X-Api-Key': MAGNUM_API_KEY })
         .send({
-          businUnit: 'bb123bb123',
-          issuerNUIS: 'I12345678I',
-          regDateTime: date,
-          tcrOrdNum: 1,
+          payload: {
+            businUnit: 'bb123bb123',
+            issuerNUIS: 'I12345678I',
+            regDateTime: date,
+            tcrOrdNum: 1,
+          },
+          certificates: {
+            privateKey,
+            certificate,
+          },
         });
 
       expect(res.status).toBe(400);
@@ -146,10 +195,16 @@ describe('Integration | TCR Routes', () => {
       const res = await request(app)
         .post('/api/tcrs/cashBalance')
         .send({
-          businUnit: 'bb123bb123',
-          issuerNUIS: 'I12345678I',
-          regDateTime: '2019-09-03T14:37:31+02:00',
-          tcrOrdNum: 1,
+          payload: {
+            businUnit: 'bb123bb123',
+            issuerNUIS: 'I12345678I',
+            regDateTime: '2019-09-03T14:37:31+02:00',
+            tcrOrdNum: 1,
+          },
+          certificates: {
+            privateKey,
+            certificate,
+          },
         });
 
       expect(res.status).toBe(401);
@@ -160,11 +215,17 @@ describe('Integration | TCR Routes', () => {
         .post('/api/tcrs/cashBalance')
         .set({ 'X-Api-Key': MAGNUM_API_KEY })
         .send({
-          tcrNumber: 'bb123bb123',
-          issuerNUIS: 'I12345678I',
-          balChkDatTim: '2019-09-03T14:37:31+02:00',
-          operation: 'Balance',
-          cashAmt: 2000,
+          payload: {
+            tcrNumber: 'bb123bb123',
+            issuerNUIS: 'I12345678I',
+            balChkDatTim: '2019-09-03T14:37:31+02:00',
+            operation: 'Balance',
+            cashAmt: 2000,
+          },
+          certificates: {
+            privateKey,
+            certificate,
+          },
         });
 
       expect(res.status).toBe(200);
@@ -187,11 +248,17 @@ describe('Integration | TCR Routes', () => {
         .post('/api/tcrs/cashBalance')
         .set({ 'X-Api-Key': MAGNUM_API_KEY })
         .send({
-          tcrNumber: 'bb123bb123',
-          issuerNUIS: 'I12345678I',
-          balChkDatTim: '2019-09-03T14:37:31+02:00',
-          operation: 'Deposit',
-          cashAmt: 200,
+          payload: {
+            tcrNumber: 'bb123bb123',
+            issuerNUIS: 'I12345678I',
+            balChkDatTim: '2019-09-03T14:37:31+02:00',
+            operation: 'Deposit',
+            cashAmt: 200,
+          },
+          certificates: {
+            privateKey,
+            certificate,
+          },
         });
 
       expect(res.status).toBe(200);
@@ -210,11 +277,17 @@ describe('Integration | TCR Routes', () => {
         .post('/api/tcrs/cashBalance')
         .set({ 'X-Api-Key': MAGNUM_API_KEY })
         .send({
-          tcrNumber: 'bb123bb123',
-          issuerNUIS: 'I12345678I',
-          balChkDatTim: '2019-09-03T14:37:31+02:00',
-          operation: 'Credit',
-          cashAmt: 200,
+          payload: {
+            tcrNumber: 'bb123bb123',
+            issuerNUIS: 'I12345678I',
+            balChkDatTim: '2019-09-03T14:37:31+02:00',
+            operation: 'Credit',
+            cashAmt: 200,
+          },
+          certificates: {
+            privateKey,
+            certificate,
+          },
         });
 
       expect(res.status).toBe(200);
@@ -222,7 +295,7 @@ describe('Integration | TCR Routes', () => {
       expect(res.body.header.sendDateTime).toBeDefined();
       expect(res.body.header.UUID).toBeDefined();
       expect(res.body.header.requestUUID).toBeDefined();
-      
+
       // body
       expect(res.body.body).toBeDefined();
       expect(res.body.body.operation).toBe('Credit');
@@ -233,10 +306,16 @@ describe('Integration | TCR Routes', () => {
         .post('/api/tcrs/cashBalance')
         .set({ 'X-Api-Key': MAGNUM_API_KEY })
         .send({
-          issuerNUIS: 'I12345678I',
-          balChkDatTim: '2019-09-03T14:37:31+02:00',
-          operation: 'Balance',
-          cashAmt: 2000,
+          payload: {
+            issuerNUIS: 'I12345678I',
+            balChkDatTim: '2019-09-03T14:37:31+02:00',
+            operation: 'Balance',
+            cashAmt: 2000,
+          },
+          certificates: {
+            privateKey,
+            certificate,
+          },
         });
 
       expect(res.status).toBe(400);
@@ -245,10 +324,16 @@ describe('Integration | TCR Routes', () => {
         .post('/api/tcrs/cashBalance')
         .set({ 'X-Api-Key': MAGNUM_API_KEY })
         .send({
-          tcrNumber: 'bb123bb123',
-          balChkDatTim: '2019-09-03T14:37:31+02:00',
-          operation: 'Balance',
-          cashAmt: 2000,
+          payload: {
+            tcrNumber: 'bb123bb123',
+            balChkDatTim: '2019-09-03T14:37:31+02:00',
+            operation: 'Balance',
+            cashAmt: 2000,
+          },
+          certificates: {
+            privateKey,
+            certificate,
+          },
         });
 
       expect(res.status).toBe(400);
@@ -257,10 +342,16 @@ describe('Integration | TCR Routes', () => {
         .post('/api/tcrs/cashBalance')
         .set({ 'X-Api-Key': MAGNUM_API_KEY })
         .send({
-          tcrNumber: 'bb123bb123',
-          issuerNUIS: 'I12345678I',
-          operation: 'Balance',
-          cashAmt: 2000,
+          payload: {
+            tcrNumber: 'bb123bb123',
+            issuerNUIS: 'I12345678I',
+            operation: 'Balance',
+            cashAmt: 2000,
+          },
+          certificates: {
+            privateKey,
+            certificate,
+          },
         });
 
       expect(res.status).toBe(400);
@@ -269,10 +360,16 @@ describe('Integration | TCR Routes', () => {
         .post('/api/tcrs/cashBalance')
         .set({ 'X-Api-Key': MAGNUM_API_KEY })
         .send({
-          tcrNumber: 'bb123bb123',
-          issuerNUIS: 'I12345678I',
-          balChkDatTim: '2019-09-03T14:37:31+02:00',
-          cashAmt: 2000,
+          payload: {
+            tcrNumber: 'bb123bb123',
+            issuerNUIS: 'I12345678I',
+            balChkDatTim: '2019-09-03T14:37:31+02:00',
+            cashAmt: 2000,
+          },
+          certificates: {
+            privateKey,
+            certificate,
+          },
         });
 
       expect(res.status).toBe(400);
@@ -281,10 +378,16 @@ describe('Integration | TCR Routes', () => {
         .post('/api/tcrs/cashBalance')
         .set({ 'X-Api-Key': MAGNUM_API_KEY })
         .send({
-          tcrNumber: 'bb123bb123',
-          issuerNUIS: 'I12345678I',
-          balChkDatTim: '2019-09-03T14:37:31+02:00',
-          operation: 'Balance',
+          payload: {
+            tcrNumber: 'bb123bb123',
+            issuerNUIS: 'I12345678I',
+            balChkDatTim: '2019-09-03T14:37:31+02:00',
+            operation: 'Balance',
+          },
+          certificates: {
+            privateKey,
+            certificate,
+          },
         });
 
       expect(res.status).toBe(400);
@@ -295,11 +398,17 @@ describe('Integration | TCR Routes', () => {
         .post('/api/tcrs/cashBalance')
         .set({ 'X-Api-Key': MAGNUM_API_KEY })
         .send({
-          tcrNumber: 'bb123bb123',
-          issuerNUIS: 'I12345678I',
-          balChkDatTim: new Date().toUTCString(),
-          operation: 'Balance',
-          cashAmt: 2000,
+          payload: {
+            tcrNumber: 'bb123bb123',
+            issuerNUIS: 'I12345678I',
+            balChkDatTim: new Date().toUTCString(),
+            operation: 'Balance',
+            cashAmt: 2000,
+          },
+          certificates: {
+            privateKey,
+            certificate,
+          },
         });
 
       expect(res.status).toBe(400);
@@ -311,11 +420,17 @@ describe('Integration | TCR Routes', () => {
         .post('/api/tcrs/cashBalance')
         .set({ 'X-Api-Key': MAGNUM_API_KEY })
         .send({
-          tcrNumber: 'bb123bb123',
-          issuerNUIS: 'I12345678I',
-          balChkDatTim: date,
-          operation: 'Balance',
-          cashAmt: 2000,
+          payload: {
+            tcrNumber: 'bb123bb123',
+            issuerNUIS: 'I12345678I',
+            balChkDatTim: date,
+            operation: 'Balance',
+            cashAmt: 2000,
+          },
+          certificates: {
+            privateKey,
+            certificate,
+          },
         });
 
       expect(res.status).toBe(400);
@@ -327,11 +442,17 @@ describe('Integration | TCR Routes', () => {
         .post('/api/tcrs/cashBalance')
         .set({ 'X-Api-Key': MAGNUM_API_KEY })
         .send({
-          tcrNumber: 'bb123bb123',
-          issuerNUIS: 'I12345678I',
-          balChkDatTim: date,
-          operation: 'Withdraw',
-          cashAmt: 2000.0,
+          payload: {
+            tcrNumber: 'bb123bb123',
+            issuerNUIS: 'I12345678I',
+            balChkDatTim: date,
+            operation: 'Withdraw',
+            cashAmt: 2000.0,
+          },
+          certificates: {
+            privateKey,
+            certificate,
+          },
         });
 
       expect(res.status).toBe(400);
@@ -343,11 +464,17 @@ describe('Integration | TCR Routes', () => {
         .post('/api/tcrs/cashBalance')
         .set({ 'X-Api-Key': MAGNUM_API_KEY })
         .send({
-          tcrNumber: 'bb123bb123',
-          issuerNUIS: 'I12345678I',
-          balChkDatTim: date,
-          operation: 'Withdraw',
-          cashAmt: -1,
+          payload: {
+            tcrNumber: 'bb123bb123',
+            issuerNUIS: 'I12345678I',
+            balChkDatTim: date,
+            operation: 'Withdraw',
+            cashAmt: -1,
+          },
+          certificates: {
+            privateKey,
+            certificate,
+          },
         });
 
       expect(res.status).toBe(400);
