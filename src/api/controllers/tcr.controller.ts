@@ -1,6 +1,7 @@
 import { Request, Response } from 'express';
 import { NextFn } from '../../types';
 import { registerTCR, cashBalance } from '../../services/TCR.service';
+import { toCentralEuropeanTimezone } from '../../utils/date-utils';
 
 export async function handleRegisterTCR(
   req: Request,
@@ -10,10 +11,12 @@ export async function handleRegisterTCR(
   try {
     const { businUnit, issuerNUIS, regDateTime, tcrOrdNum } = req.body;
 
+    const formattedDateTime = toCentralEuropeanTimezone(regDateTime);
+
     const response = await registerTCR({
       businUnit,
       issuerNUIS,
-      regDateTime,
+      regDateTime: formattedDateTime,
       tcrOrdNum,
     });
 
@@ -37,8 +40,10 @@ export async function handleCashBalance(
       tcrNumber,
     } = req.body;
 
+    const formattedDateTime = toCentralEuropeanTimezone(balChkDatTim);
+
     const response = await cashBalance({
-      balChkDatTim,
+      balChkDatTim: formattedDateTime,
       issuerNUIS,
       cashAmt,
       operation,
