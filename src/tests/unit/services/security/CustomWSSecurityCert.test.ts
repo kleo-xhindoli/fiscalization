@@ -1,4 +1,7 @@
-import { key, cert } from './keys.pem';
+import {
+  privateKey as key,
+  certificate as cert,
+} from '../../../__test-data__/keys';
 import { WSSecurityCert } from '../../../../services/security/CustomWSSecurityCert';
 
 const configurations = {

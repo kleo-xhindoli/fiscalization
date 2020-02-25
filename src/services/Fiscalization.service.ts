@@ -57,14 +57,7 @@ function transformRegisterTCRRequest(
       BusinUnit: request.body.businUnit,
       IssuerNUIS: request.body.issuerNUIS,
       ManufacNum: request.body.manufacNum,
-      // TODO: remove after rebase
-      RegDateTime: formatToTimeZone(
-        request.body.regDateTime,
-        'YYYY-MM-DDTHH:mm:ss[Z]',
-        {
-          timeZone: 'Europe/Berlin',
-        }
-      ),
+      RegDateTime: request.body.regDateTime,
       SoftNum: request.body.softNum,
       TCROrdNum: request.body.tcrOrdNum,
     },

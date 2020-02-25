@@ -2,7 +2,10 @@ import { Client } from 'soap';
 import { initializeSOAP } from '../setup-tests';
 import { sendRegisterTCRRequest } from '../../../services/Fiscalization.service';
 import { generateFiscHeaders } from '../../../utils/fiscHeaders';
-import { key, cert } from './keys.pem';
+import {
+  privateKey as key,
+  certificate as cert,
+} from '../../__test-data__/keys';
 
 describe('Integration | Service | Fiscalization', () => {
   let client: Client | null = null;

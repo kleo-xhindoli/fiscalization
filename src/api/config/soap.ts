@@ -46,7 +46,7 @@ export default async function init() {
   } catch (e) {
     /**
      * The test fiscalization service sometimes returns 404 when getting the
-     * WSDL file for no reazon. Attempt a retry after 2 seconds before failing.
+     * WSDL file for no reason. Attempt a retry after 2 seconds before failing.
      */
     logger.info(
       '[INFO | SOAP]: Failed to connect to WSDL. Retrying after 2 seconds.'
