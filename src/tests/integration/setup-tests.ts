@@ -37,7 +37,8 @@ export function initializeServer() {
 }
 
 export async function initializeSOAP() {
-  mockWSLD();
+  // mockWSLD();
+  // TODO: fix this
   const client = await initSoap();
   logger.info('SOAP Initialized');
   return client;

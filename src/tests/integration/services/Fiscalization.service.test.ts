@@ -20,7 +20,7 @@ describe('Integration | Service | Fiscalization', () => {
   });
 
   describe('sendRegisterTCRRequest', () => {
-    it('should send the correct RegisterTCRRequest', async () => {
+    xit('should send the correct RegisterTCRRequest', async () => {
       const req = {
         header: generateFiscHeaders(),
         body: {
