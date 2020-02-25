@@ -1,0 +1,102 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no" ?>
+<wsdl:definitions xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/" xmlns:al="https://eFiskalizimi.tatime.gov.al/FiscalizationService" xmlns:als="https://eFiskalizimi.tatime.gov.al/FiscalizationService/schema" xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" name="FiscalizationService" targetNamespace="https://eFiskalizimi.tatime.gov.al/FiscalizationService">
+  <wsdl:types>
+    <xsd:schema>
+      <xsd:import namespace="https://eFiskalizimi.tatime.gov.al/FiscalizationService/schema" schemaLocation="alimc-fiscalization-service.xsd" />
+    </xsd:schema>
+  </wsdl:types>
+  <wsdl:message name="RegisterInvoiceRequest">
+    <wsdl:documentation>Element representing register sale message.</wsdl:documentation>
+    <wsdl:part element="als:RegisterInvoiceRequest" name="request" />
+  </wsdl:message>
+  <wsdl:message name="RegisterInvoiceResponse">
+    <wsdl:documentation>Element representing register invoice response message.</wsdl:documentation>
+    <wsdl:part element="als:RegisterInvoiceResponse" name="response" />
+  </wsdl:message>
+  <wsdl:message name="RegisterTCRRequest">
+    <wsdl:documentation>Element representing request of the TCR registration message.</wsdl:documentation>
+    <wsdl:part element="als:RegisterTCRRequest" name="request" />
+  </wsdl:message>
+  <wsdl:message name="RegisterTCRResponse">
+    <wsdl:documentation>Element representing response of the TCR registration message.</wsdl:documentation>
+    <wsdl:part element="als:RegisterTCRResponse" name="response" />
+  </wsdl:message>
+  <wsdl:message name="RegisterTCRCashBalanceRequest">
+    <wsdl:documentation>Element representing request of the TCR cash balance request message.</wsdl:documentation>
+    <wsdl:part element="als:RegisterTCRCashBalanceRequest" name="request" />
+  </wsdl:message>
+  <wsdl:message name="RegisterTCRCashBalanceResponse">
+    <wsdl:documentation>Element representing response of the TCR cash balance response message.</wsdl:documentation>
+    <wsdl:part element="als:RegisterTCRCashBalanceResponse" name="response" />
+  </wsdl:message>
+  <wsdl:message name="RegisterWTNRequest">
+    <wsdl:documentation>Element representing warehouse transfer note request message</wsdl:documentation>
+    <wsdl:part element="als:RegisterWTNRequest" name="request" />
+  </wsdl:message>
+  <wsdl:message name="RegisterWTNResponse">
+    <wsdl:documentation>Element representing warehouse transfer note response message.</wsdl:documentation>
+    <wsdl:part element="als:RegisterWTNResponse" name="response" />
+  </wsdl:message>
+  <wsdl:portType name="FiscalizationServicePortType">
+    <wsdl:operation name="registerInvoice">
+      <wsdl:input message="al:RegisterInvoiceRequest" />
+      <wsdl:output message="al:RegisterInvoiceResponse" />
+    </wsdl:operation>
+    <wsdl:operation name="registerTCR">
+      <wsdl:input message="al:RegisterTCRRequest" />
+      <wsdl:output message="al:RegisterTCRResponse" />
+    </wsdl:operation>
+    <wsdl:operation name="registerTCRCashBalance">
+      <wsdl:input message="al:RegisterTCRCashBalanceRequest" />
+      <wsdl:output message="al:RegisterTCRCashBalanceResponse" />
+    </wsdl:operation>
+    <wsdl:operation name="registerWTN">
+      <wsdl:input message="al:RegisterWTNRequest" />
+      <wsdl:output message="al:RegisterWTNResponse" />
+    </wsdl:operation>
+  </wsdl:portType>
+  <wsdl:binding name="FiscalizationServiceSoap" type="al:FiscalizationServicePortType">
+    <soap:binding style="document" transport="http://schemas.xmlsoap.org/soap/http" />
+    <wsdl:operation name="registerInvoice">
+      <soap:operation soapAction="https://eFiskalizimi.tatime.gov.al/FiscalizationService/RegisterInvoice" />
+      <wsdl:input>
+        <soap:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="registerTCR">
+      <soap:operation soapAction="https://eFiskalizimi.tatime.gov.al/FiscalizationService/RegisterTCR" />
+      <wsdl:input>
+        <soap:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="registerTCRCashBalance">
+      <soap:operation soapAction="https://eFiskalizimi.tatime.gov.al/FiscalizationService/RegisterTCRCashBalance" />
+      <wsdl:input>
+        <soap:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="registerWTN">
+      <soap:operation soapAction="https://eFiskalizimi.tatime.gov.al/FiscalizationService/RegisterWTN" />
+      <wsdl:input>
+        <soap:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+  </wsdl:binding>
+  <wsdl:service name="FiscalizationService">
+    <wsdl:port binding="al:FiscalizationServiceSoap" name="FiscalizationServicePort">
+      <soap:address location="https://efiskalizimi-test.tatime.gov.al:443/FiscalizationService" />
+    </wsdl:port>
+  </wsdl:service>
+</wsdl:definitions>
