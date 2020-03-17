@@ -4,7 +4,10 @@ import {
   TCRCashBalanceRequest,
   TCRCashBalanceResponse,
 } from '../types';
-import { generateFiscHeaders } from '../utils/fiscHeaders';
+import {
+  generateFiscHeaders,
+  generateSubsequentFiscHeaders,
+} from '../utils/fiscHeaders';
 import uuidv4 from 'uuid/v4';
 import config from '../config';
 
@@ -14,7 +17,7 @@ export async function registerTCR(
   const { UUID: requestUUID, sendDateTime } = generateFiscHeaders();
 
   // TODO: Implementation
-  const tcrNumber = 'tcr1234';
+  const tcrCode = 'tcr1234';
   return {
     header: {
       requestUUID,
@@ -22,9 +25,9 @@ export async function registerTCR(
       UUID: uuidv4(),
     },
     body: {
-      tcrNumber,
-      softNum: config.fiscSoftwareNumber,
-      manufacNum: config.fiscManufacturerNumber,
+      tcrCode,
+      softCode: config.fiscSoftwareCode,
+      maintainerCode: config.fiscMaintainerCode,
       ...tcrRequest,
     },
   };
@@ -33,7 +36,11 @@ export async function registerTCR(
 export async function cashBalance(
   cashBalanceRequest: TCRCashBalanceRequest
 ): Promise<TCRCashBalanceResponse> {
-  const { UUID: requestUUID, sendDateTime } = generateFiscHeaders();
+  const { UUID: requestUUID, sendDateTime } = generateSubsequentFiscHeaders(
+    cashBalanceRequest.isSubseqDeliv
+  );
+
+  const FCDC = uuidv4();
 
   // TODO: Implementation
   return {
@@ -44,6 +51,7 @@ export async function cashBalance(
     },
     body: {
       ...cashBalanceRequest,
+      FCDC,
     },
   };
 }

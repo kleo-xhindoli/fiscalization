@@ -9,10 +9,9 @@ import {
 
 describe('Integration | Service | Fiscalization', () => {
   let client: Client | null = null;
-  // @ts-ignore
-  process.env['NODE_TLS_REJECT_UNAUTHORIZED'] = 1;
   beforeAll(async done => {
     try {
+      jest.setTimeout(30000);
       client = await initializeSOAP();
       console.log('INITIALIZED CLIENT');
       done();
@@ -27,16 +26,16 @@ describe('Integration | Service | Fiscalization', () => {
       const req = {
         header: generateFiscHeaders(),
         body: {
-          businUnit: 'bb123bb123',
-          issuerNUIS: 'J81609010U',
-          manufacNum: 'mm123mm123',
-          regDateTime: new Date().toISOString(),
-          softNum: 'ss123ss123',
-          tcrOrdNum: 1,
+          businUnitCode: 'ns187ov411',
+          issuerNUIS: 'L41323036D',
+          maintainerCode: 'pa979rk772',
+          softCode: 'rm039uu671',
+          tcrIntID: 1,
         },
       };
       try {
         const res = await sendRegisterTCRRequest(req, key, cert);
+        console.log(JSON.stringify(res));
       } catch (e) {
         console.log(client?.lastRequest);
       }

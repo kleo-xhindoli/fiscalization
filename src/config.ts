@@ -14,9 +14,9 @@ if (process.env.NODE_ENV != 'production') {
 
 const port = process.env.API_PORT as string;
 const apiBasePath = process.env.API_BASE_PATH as string;
-const fiscSoftwareNumber = process.env.FISCALIZATION_SOFTWARE_NUMBER as string;
-const fiscManufacturerNumber = process.env
-  .FISCALIZATION_MANUFACTURER_NUMBER as string;
+const fiscSoftwareCode = process.env.FISCALIZATION_SOFTWARE_CODE as string;
+const fiscMaintainerCode = process.env
+  .FISCALIZATION_MAINTAINER_CODE as string;
 const fiscEndpoint = process.env.FISCALIZATION_ENDPOINT as string;
 
 const clients: Clients = {
@@ -28,7 +28,7 @@ export default {
   apiBasePath,
   port,
   clients,
-  fiscSoftwareNumber,
-  fiscManufacturerNumber,
+  fiscSoftwareCode,
+  fiscMaintainerCode,
   fiscEndpoint,
 };

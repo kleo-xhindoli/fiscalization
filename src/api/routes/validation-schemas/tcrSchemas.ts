@@ -1,33 +1,30 @@
 import joi from 'joi';
 
 export const registerTCRPayloadSchema = {
-  businUnit: joi.string().required(),
+  businUnitCode: joi.string().required(),
   issuerNUIS: joi.string().required(), // TODO: NUIS regex
-  regDateTime: joi
-    .date()
-    .iso()
-    .max('now')
-    .required(),
-  tcrOrdNum: joi
+  tcrIntID: joi
     .number()
     .min(1)
     .required(),
+  validFrom: joi.date().iso(),
+  validTo: joi.date().iso(),
 };
 
 export const cashBalancePayloadSchema = {
-  balChkDatTim: joi
+  changeDateTime: joi
     .date()
     .iso()
     .max('now')
     .required(),
   cashAmt: joi
     .number()
-    .min(0)
     .required(),
   issuerNUIS: joi.string().required(), // TODO: NUIS regex
   operation: joi
     .string()
-    .valid(['Balance', 'Deposit', 'Credit'])
+    .valid(['INITIAL', 'INOUT'])
     .required(),
-  tcrNumber: joi.string().required(),
+  tcrCode: joi.string().required(),
+  isSubseqDeliv: joi.boolean().default(false),
 };

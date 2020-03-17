@@ -76,7 +76,7 @@ function getFiscInvoiceRequest(
     invNum,
     invoiceRequest.businUnit,
     invoiceRequest.cashRegister || '',
-    config.fiscSoftwareNumber,
+    config.fiscSoftwareCode,
     totPrice,
     privateKey
   );
@@ -93,7 +93,7 @@ function getFiscInvoiceRequest(
       totPriceWoVAT,
       totVATAmt,
       totPrice,
-      softNum: config.fiscSoftwareNumber,
+      softNum: config.fiscSoftwareCode,
       iic,
       iicSignature,
       iicReference,

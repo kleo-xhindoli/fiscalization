@@ -2,6 +2,8 @@ import { Request, Response } from 'express';
 import { NextFn } from '../../types';
 import { registerTCR, cashBalance } from '../../services/TCR.service';
 import { toCentralEuropeanTimezone } from '../../utils/date-utils';
+import { differenceInCalendarDays, parseISO } from 'date-fns';
+import { badRequest } from 'boom';
 
 export async function handleRegisterTCR(
   req: Request,
@@ -9,15 +11,49 @@ export async function handleRegisterTCR(
   next: NextFn
 ) {
   try {
-    const { businUnit, issuerNUIS, regDateTime, tcrOrdNum } = req.body;
+    let { businUnitCode, issuerNUIS, tcrIntID, validFrom, validTo } = req.body;
 
-    const formattedDateTime = toCentralEuropeanTimezone(regDateTime);
+    let validFromLocalized: string | null = null;
+    let validToLocalized: string | null = null;
+    const now = new Date();
+
+    if (validFrom) {
+      validFromLocalized = toCentralEuropeanTimezone(validFrom);
+
+      // Validate validFrom not in the past
+      const difference = differenceInCalendarDays(parseISO(validFrom), now);
+      if (difference < 0)
+        return next(badRequest('validFrom cannot be in the past'));
+    }
+
+    if (validTo) {
+      if (!validFrom) {
+        // Default validFrom to now if it is not specified
+        validFrom = validFromLocalized = toCentralEuropeanTimezone(validFrom);
+      }
+
+      validToLocalized = toCentralEuropeanTimezone(validTo);
+
+      // Validate validTo not in the past
+      let difference = differenceInCalendarDays(parseISO(validTo), now);
+      if (difference < 0)
+        return next(badRequest('validTo cannot be in the past'));
+
+      // Validate validTo not before validFrom
+      difference = differenceInCalendarDays(
+        parseISO(validTo),
+        parseISO(validFrom)
+      );
+      if (difference < 0)
+        return next(badRequest('validTo cannot be before validFrom'));
+    }
 
     const response = await registerTCR({
-      businUnit,
+      businUnitCode,
       issuerNUIS,
-      regDateTime: formattedDateTime,
-      tcrOrdNum,
+      tcrIntID,
+      validFrom: validFromLocalized,
+      validTo: validToLocalized,
     });
 
     res.json(response);
@@ -33,21 +69,23 @@ export async function handleCashBalance(
 ) {
   try {
     const {
-      balChkDatTim,
+      changeDateTime,
       issuerNUIS,
       cashAmt,
       operation,
-      tcrNumber,
-    } = req.body;
+      tcrCode,
+      isSubseqDeliv,
+    } = req.validatedBody;
 
-    const formattedDateTime = toCentralEuropeanTimezone(balChkDatTim);
+    const formattedDateTime = toCentralEuropeanTimezone(changeDateTime);
 
     const response = await cashBalance({
-      balChkDatTim: formattedDateTime,
+      changeDateTime: formattedDateTime,
       issuerNUIS,
       cashAmt,
       operation,
-      tcrNumber,
+      tcrCode,
+      isSubseqDeliv,
     });
 
     res.json(response);

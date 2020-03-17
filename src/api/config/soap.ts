@@ -1,6 +1,8 @@
 import { Client, createClientAsync } from 'soap';
 import config from '../../config';
 import logger from './logger';
+import request from 'request';
+
 
 const waitForSecondsAsync = (sec: number) => {
   return new Promise(resolve => {
@@ -8,11 +10,12 @@ const waitForSecondsAsync = (sec: number) => {
   });
 };
 
+const requestWithDefaults = request.defaults({ rejectUnauthorized: false });
 const wsdlUrl = `${config.fiscEndpoint}/FiscalizationService.wsdl`;
 const serviceUrl = `${config.fiscEndpoint}/`;
 const clientConfig = {
   envelopeKey: 'SOAP-ENV',
-  
+
   overrideRootElement: {
     namespace: '',
     xmlnsAttributes: [
@@ -28,8 +31,13 @@ const clientConfig = {
         name: 'Id',
         value: 'Request',
       },
+      {
+        name: 'Version',
+        value: '2',
+      },
     ],
   },
+  request: requestWithDefaults,
 };
 
 let _client: null | Client = null;
@@ -39,6 +47,7 @@ export default async function init() {
     const client = (await createClientAsync(wsdlUrl, clientConfig)) as Client;
     client.setEndpoint(serviceUrl);
     _client = client;
+    logger.info('[INFO | SOAP]: Connected to Fiscalization Service');
     return client;
   };
   try {

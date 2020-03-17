@@ -4,6 +4,7 @@ import { Server } from 'http';
 import { privateKey, certificate } from '../../../__test-data__/keys';
 
 import add from 'date-fns/add';
+import { addDays, subDays } from 'date-fns';
 
 describe('Integration | TCR Routes', () => {
   const MAGNUM_API_KEY = 'tky3um15444ffcPPcMF';
@@ -32,10 +33,9 @@ describe('Integration | TCR Routes', () => {
         .post('/api/tcrs/registerTCR')
         .send({
           payload: {
-            businUnit: 'bb123bb123',
+            businUnitCode: 'bb123bb123',
             issuerNUIS: 'I12345678I',
-            regDateTime: '2019-09-03T14:37:31+02:00',
-            tcrOrdNum: 1,
+            tcrIntID: 1,
           },
           certificates: {
             privateKey,
@@ -52,10 +52,9 @@ describe('Integration | TCR Routes', () => {
         .set({ 'X-Api-Key': MAGNUM_API_KEY })
         .send({
           payload: {
-            businUnit: 'bb123bb123',
+            businUnitCode: 'bb123bb123',
             issuerNUIS: 'I12345678I',
-            regDateTime: '2019-09-03T14:37:31+02:00',
-            tcrOrdNum: 1,
+            tcrIntID: 1,
           },
           certificates: {
             privateKey,
@@ -70,22 +69,134 @@ describe('Integration | TCR Routes', () => {
       expect(res.body.header.requestUUID).toBeDefined();
 
       // body
-      expect(res.body.body.tcrNumber).toBeDefined();
-      expect(res.body.body.businUnit).toBe('bb123bb123');
+      expect(res.body.body.tcrCode).toBeDefined();
+      expect(res.body.body.businUnitCode).toBe('bb123bb123');
       expect(res.body.body.issuerNUIS).toBe('I12345678I');
-      expect(res.body.body.regDateTime).toBe('2019-09-03T14:37:31+02:00');
-      expect(res.body.body.tcrOrdNum).toBe(1);
+      expect(res.body.body.tcrIntID).toBe(1);
+    });
+
+    it(`should respond with the created TCR number on a valid POST request
+      when validFrom and validTo are present`, async () => {
+      const now = new Date();
+      const validFrom = now.toISOString();
+      const validTo = addDays(now, 90).toISOString();
+
+      const res = await request(app)
+        .post('/api/tcrs/registerTCR')
+        .set({ 'X-Api-Key': MAGNUM_API_KEY })
+        .send({
+          payload: {
+            businUnitCode: 'bb123bb123',
+            issuerNUIS: 'I12345678I',
+            tcrIntID: 1,
+            validFrom,
+            validTo,
+          },
+          certificates: {
+            privateKey,
+            certificate,
+          },
+        });
+
+      expect(res.status).toBe(200);
+      // header
+      expect(res.body.header.sendDateTime).toBeDefined();
+      expect(res.body.header.UUID).toBeDefined();
+      expect(res.body.header.requestUUID).toBeDefined();
+
+      // body
+      expect(res.body.body.tcrCode).toBeDefined();
+      expect(res.body.body.businUnitCode).toBe('bb123bb123');
+      expect(res.body.body.issuerNUIS).toBe('I12345678I');
+      expect(res.body.body.tcrIntID).toBe(1);
+      expect(res.body.body.validFrom).toBeDefined();
+      expect(res.body.body.validTo).toBeDefined();
+    });
+
+    it(`should respond with 400 if validFrom is in the past`, async () => {
+      const now = new Date();
+      const validFrom = subDays(now, 1).toISOString();
+      const validTo = addDays(now, 90).toISOString();
+
+      const res = await request(app)
+        .post('/api/tcrs/registerTCR')
+        .set({ 'X-Api-Key': MAGNUM_API_KEY })
+        .send({
+          payload: {
+            businUnitCode: 'bb123bb123',
+            issuerNUIS: 'I12345678I',
+            tcrIntID: 1,
+            validFrom,
+            validTo,
+          },
+          certificates: {
+            privateKey,
+            certificate,
+          },
+        });
+
+      expect(res.status).toBe(400);
+    });
+
+    it(`should respond with 400 if validTo is in the past`, async () => {
+      const now = new Date();
+      const validFrom = now.toISOString();
+      const validTo = subDays(now, 1).toISOString();
+
+      const res = await request(app)
+        .post('/api/tcrs/registerTCR')
+        .set({ 'X-Api-Key': MAGNUM_API_KEY })
+        .send({
+          payload: {
+            businUnitCode: 'bb123bb123',
+            issuerNUIS: 'I12345678I',
+            tcrIntID: 1,
+            validFrom,
+            validTo,
+          },
+          certificates: {
+            privateKey,
+            certificate,
+          },
+        });
+
+      expect(res.status).toBe(400);
+    });
+
+    it(`should respond with 400 if validTo is before validFrom`, async () => {
+      const now = new Date();
+      const validFrom = addDays(now, 3);
+      const validTo = subDays(validFrom, 1);
+
+      const res = await request(app)
+        .post('/api/tcrs/registerTCR')
+        .set({ 'X-Api-Key': MAGNUM_API_KEY })
+        .send({
+          payload: {
+            businUnitCode: 'bb123bb123',
+            issuerNUIS: 'I12345678I',
+            tcrIntID: 1,
+            validFrom: validFrom.toISOString(),
+            validTo: validTo.toISOString(),
+          },
+          certificates: {
+            privateKey,
+            certificate,
+          },
+        });
+
+      expect(res.status).toBe(400);
     });
 
     it('should respond with 400 if any of the required fields are missing', async () => {
+      // Missing businessUnitCode
       let res = await request(app)
         .post('/api/tcrs/registerTCR')
         .set({ 'X-Api-Key': MAGNUM_API_KEY })
         .send({
           payload: {
             issuerNUIS: 'I12345678I',
-            regDateTime: '2019-09-03T14:37:31+02:00',
-            tcrOrdNum: 1,
+            tcrIntID: 1,
           },
           certificates: {
             privateKey,
@@ -95,14 +206,14 @@ describe('Integration | TCR Routes', () => {
 
       expect(res.status).toBe(400);
 
+      // Missing issuerNUIS
       res = await request(app)
         .post('/api/tcrs/registerTCR')
         .set({ 'X-Api-Key': MAGNUM_API_KEY })
         .send({
           payload: {
-            businUnit: 'bb123bb123',
-            regDateTime: '2019-09-03T14:37:31+02:00',
-            tcrOrdNum: 1,
+            businUnitCode: 'bb123bb123',
+            tcrIntID: 1,
           },
           certificates: {
             privateKey,
@@ -112,31 +223,14 @@ describe('Integration | TCR Routes', () => {
 
       expect(res.status).toBe(400);
 
+      // Missing tcrIntID
       res = await request(app)
         .post('/api/tcrs/registerTCR')
         .set({ 'X-Api-Key': MAGNUM_API_KEY })
         .send({
           payload: {
-            businUnit: 'bb123bb123',
+            businUnitCode: 'bb123bb123',
             issuerNUIS: 'I12345678I',
-            tcrOrdNum: 1,
-          },
-          certificates: {
-            privateKey,
-            certificate,
-          },
-        });
-
-      expect(res.status).toBe(400);
-
-      res = await request(app)
-        .post('/api/tcrs/registerTCR')
-        .set({ 'X-Api-Key': MAGNUM_API_KEY })
-        .send({
-          payload: {
-            businUnit: 'bb123bb123',
-            issuerNUIS: 'I12345678I',
-            regDateTime: '2019-09-03T14:37:31+02:00',
           },
           certificates: {
             privateKey,
@@ -153,10 +247,10 @@ describe('Integration | TCR Routes', () => {
         .set({ 'X-Api-Key': MAGNUM_API_KEY })
         .send({
           payload: {
-            businUnit: 'bb123bb123',
+            businUnitCode: 'bb123bb123',
             issuerNUIS: 'I12345678I',
             regDateTime: new Date().toUTCString(),
-            tcrOrdNum: 1,
+            tcrIntID: 1,
           },
           certificates: {
             privateKey,
@@ -174,10 +268,10 @@ describe('Integration | TCR Routes', () => {
         .set({ 'X-Api-Key': MAGNUM_API_KEY })
         .send({
           payload: {
-            businUnit: 'bb123bb123',
+            businUnitCode: 'bb123bb123',
             issuerNUIS: 'I12345678I',
             regDateTime: date,
-            tcrOrdNum: 1,
+            tcrIntID: 1,
           },
           certificates: {
             privateKey,
@@ -196,10 +290,11 @@ describe('Integration | TCR Routes', () => {
         .post('/api/tcrs/cashBalance')
         .send({
           payload: {
-            businUnit: 'bb123bb123',
+            tcrCode: 'bb123bb123',
             issuerNUIS: 'I12345678I',
-            regDateTime: '2019-09-03T14:37:31+02:00',
-            tcrOrdNum: 1,
+            changeDateTime: '2019-09-03T14:37:31+02:00',
+            operation: 'INITIAL',
+            cashAmt: 2000,
           },
           certificates: {
             privateKey,
@@ -210,16 +305,16 @@ describe('Integration | TCR Routes', () => {
       expect(res.status).toBe(401);
     });
 
-    it('should respond with 200 and the request body on a valid Balance POST request', async () => {
+    it('should respond with 200 and the request body on a valid INITIAL POST request', async () => {
       const res = await request(app)
         .post('/api/tcrs/cashBalance')
         .set({ 'X-Api-Key': MAGNUM_API_KEY })
         .send({
           payload: {
-            tcrNumber: 'bb123bb123',
+            tcrCode: 'bb123bb123',
             issuerNUIS: 'I12345678I',
-            balChkDatTim: '2019-09-03T14:37:31+02:00',
-            operation: 'Balance',
+            changeDateTime: '2019-09-03T14:37:31+02:00',
+            operation: 'INITIAL',
             cashAmt: 2000,
           },
           certificates: {
@@ -236,24 +331,24 @@ describe('Integration | TCR Routes', () => {
 
       // body
       expect(res.body.body).toBeDefined();
-      expect(res.body.body.tcrNumber).toBe('bb123bb123');
+      expect(res.body.body.tcrCode).toBe('bb123bb123');
       expect(res.body.body.issuerNUIS).toBe('I12345678I');
-      expect(res.body.body.balChkDatTim).toBe('2019-09-03T14:37:31+02:00');
-      expect(res.body.body.operation).toBe('Balance');
+      expect(res.body.body.changeDateTime).toBe('2019-09-03T14:37:31+02:00');
+      expect(res.body.body.operation).toBe('INITIAL');
       expect(res.body.body.cashAmt).toBe(2000);
     });
 
-    it('should respond with 200 and the request body on a valid Deposit POST request', async () => {
+    it('should respond with 200 and the request body on a valid negative INOUT POST request', async () => {
       const res = await request(app)
         .post('/api/tcrs/cashBalance')
         .set({ 'X-Api-Key': MAGNUM_API_KEY })
         .send({
           payload: {
-            tcrNumber: 'bb123bb123',
+            tcrCode: 'bb123bb123',
             issuerNUIS: 'I12345678I',
-            balChkDatTim: '2019-09-03T14:37:31+02:00',
-            operation: 'Deposit',
-            cashAmt: 200,
+            changeDateTime: '2019-09-03T14:37:31+02:00',
+            operation: 'INOUT',
+            cashAmt: -200,
           },
           certificates: {
             privateKey,
@@ -269,19 +364,20 @@ describe('Integration | TCR Routes', () => {
 
       // body
       expect(res.body.body).toBeDefined();
-      expect(res.body.body.operation).toBe('Deposit');
+      expect(res.body.body.operation).toBe('INOUT');
+      expect(res.body.body.cashAmt).toBe(-200);
     });
 
-    it('should respond with 200 and the request body on a valid Credit POST request', async () => {
+    it('should respond with 200 and the request body on a valid INOUT positive POST request', async () => {
       const res = await request(app)
         .post('/api/tcrs/cashBalance')
         .set({ 'X-Api-Key': MAGNUM_API_KEY })
         .send({
           payload: {
-            tcrNumber: 'bb123bb123',
+            tcrCode: 'bb123bb123',
             issuerNUIS: 'I12345678I',
-            balChkDatTim: '2019-09-03T14:37:31+02:00',
-            operation: 'Credit',
+            changeDateTime: '2019-09-03T14:37:31+02:00',
+            operation: 'INOUT',
             cashAmt: 200,
           },
           certificates: {
@@ -298,7 +394,43 @@ describe('Integration | TCR Routes', () => {
 
       // body
       expect(res.body.body).toBeDefined();
-      expect(res.body.body.operation).toBe('Credit');
+      expect(res.body.body.operation).toBe('INOUT');
+      expect(res.body.body.cashAmt).toBe(200);
+    });
+
+    it('should respond with 200 and the request body on a valid subsequent POST request', async () => {
+      const res = await request(app)
+        .post('/api/tcrs/cashBalance')
+        .set({ 'X-Api-Key': MAGNUM_API_KEY })
+        .send({
+          payload: {
+            tcrCode: 'bb123bb123',
+            issuerNUIS: 'I12345678I',
+            changeDateTime: '2019-09-03T14:37:31+02:00',
+            operation: 'INITIAL',
+            cashAmt: 2000,
+            isSubseqDeliv: true,
+          },
+          certificates: {
+            privateKey,
+            certificate,
+          },
+        });
+
+      expect(res.status).toBe(200);
+      // header
+      expect(res.body.header.sendDateTime).toBeDefined();
+      expect(res.body.header.UUID).toBeDefined();
+      expect(res.body.header.requestUUID).toBeDefined();
+
+      // body
+      expect(res.body.body).toBeDefined();
+      expect(res.body.body.tcrCode).toBe('bb123bb123');
+      expect(res.body.body.issuerNUIS).toBe('I12345678I');
+      expect(res.body.body.changeDateTime).toBe('2019-09-03T14:37:31+02:00');
+      expect(res.body.body.operation).toBe('INITIAL');
+      expect(res.body.body.cashAmt).toBe(2000);
+      expect(res.body.body.isSubseqDeliv).toBe(true);
     });
 
     it('should respond with 400 if any of the required fields are missing', async () => {
@@ -308,8 +440,8 @@ describe('Integration | TCR Routes', () => {
         .send({
           payload: {
             issuerNUIS: 'I12345678I',
-            balChkDatTim: '2019-09-03T14:37:31+02:00',
-            operation: 'Balance',
+            changeDateTime: '2019-09-03T14:37:31+02:00',
+            operation: 'INITIAL',
             cashAmt: 2000,
           },
           certificates: {
@@ -325,9 +457,9 @@ describe('Integration | TCR Routes', () => {
         .set({ 'X-Api-Key': MAGNUM_API_KEY })
         .send({
           payload: {
-            tcrNumber: 'bb123bb123',
-            balChkDatTim: '2019-09-03T14:37:31+02:00',
-            operation: 'Balance',
+            tcrCode: 'bb123bb123',
+            changeDateTime: '2019-09-03T14:37:31+02:00',
+            operation: 'INITIAL',
             cashAmt: 2000,
           },
           certificates: {
@@ -343,9 +475,9 @@ describe('Integration | TCR Routes', () => {
         .set({ 'X-Api-Key': MAGNUM_API_KEY })
         .send({
           payload: {
-            tcrNumber: 'bb123bb123',
+            tcrCode: 'bb123bb123',
             issuerNUIS: 'I12345678I',
-            operation: 'Balance',
+            operation: 'INITIAL',
             cashAmt: 2000,
           },
           certificates: {
@@ -361,9 +493,9 @@ describe('Integration | TCR Routes', () => {
         .set({ 'X-Api-Key': MAGNUM_API_KEY })
         .send({
           payload: {
-            tcrNumber: 'bb123bb123',
+            tcrCode: 'bb123bb123',
             issuerNUIS: 'I12345678I',
-            balChkDatTim: '2019-09-03T14:37:31+02:00',
+            changeDateTime: '2019-09-03T14:37:31+02:00',
             cashAmt: 2000,
           },
           certificates: {
@@ -379,10 +511,10 @@ describe('Integration | TCR Routes', () => {
         .set({ 'X-Api-Key': MAGNUM_API_KEY })
         .send({
           payload: {
-            tcrNumber: 'bb123bb123',
+            tcrCode: 'bb123bb123',
             issuerNUIS: 'I12345678I',
-            balChkDatTim: '2019-09-03T14:37:31+02:00',
-            operation: 'Balance',
+            changeDateTime: '2019-09-03T14:37:31+02:00',
+            operation: 'INITIAL',
           },
           certificates: {
             privateKey,
@@ -399,10 +531,10 @@ describe('Integration | TCR Routes', () => {
         .set({ 'X-Api-Key': MAGNUM_API_KEY })
         .send({
           payload: {
-            tcrNumber: 'bb123bb123',
+            tcrCode: 'bb123bb123',
             issuerNUIS: 'I12345678I',
-            balChkDatTim: new Date().toUTCString(),
-            operation: 'Balance',
+            changeDateTime: new Date().toUTCString(),
+            operation: 'INITIAL',
             cashAmt: 2000,
           },
           certificates: {
@@ -421,10 +553,10 @@ describe('Integration | TCR Routes', () => {
         .set({ 'X-Api-Key': MAGNUM_API_KEY })
         .send({
           payload: {
-            tcrNumber: 'bb123bb123',
+            tcrCode: 'bb123bb123',
             issuerNUIS: 'I12345678I',
-            balChkDatTim: date,
-            operation: 'Balance',
+            changeDateTime: date,
+            operation: 'INITIAL',
             cashAmt: 2000,
           },
           certificates: {
@@ -443,9 +575,9 @@ describe('Integration | TCR Routes', () => {
         .set({ 'X-Api-Key': MAGNUM_API_KEY })
         .send({
           payload: {
-            tcrNumber: 'bb123bb123',
+            tcrCode: 'bb123bb123',
             issuerNUIS: 'I12345678I',
-            balChkDatTim: date,
+            changeDateTime: date,
             operation: 'Withdraw',
             cashAmt: 2000.0,
           },
@@ -465,9 +597,9 @@ describe('Integration | TCR Routes', () => {
         .set({ 'X-Api-Key': MAGNUM_API_KEY })
         .send({
           payload: {
-            tcrNumber: 'bb123bb123',
+            tcrCode: 'bb123bb123',
             issuerNUIS: 'I12345678I',
-            balChkDatTim: date,
+            changeDateTime: date,
             operation: 'Withdraw',
             cashAmt: -1,
           },
