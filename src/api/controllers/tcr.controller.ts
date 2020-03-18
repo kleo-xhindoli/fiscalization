@@ -3,7 +3,7 @@ import { NextFn } from '../../types';
 import { registerTCR, cashBalance } from '../../services/TCR.service';
 import { toCentralEuropeanTimezone } from '../../utils/date-utils';
 import { differenceInCalendarDays, parseISO } from 'date-fns';
-import { badRequest } from 'boom';
+import { badRequest } from '@hapi/boom';
 
 export async function handleRegisterTCR(
   req: Request,
@@ -12,6 +12,7 @@ export async function handleRegisterTCR(
 ) {
   try {
     let { businUnitCode, issuerNUIS, tcrIntID, validFrom, validTo } = req.body;
+    const { privateKey, certificate } = req;
 
     let validFromLocalized: string | null = null;
     let validToLocalized: string | null = null;
@@ -27,34 +28,30 @@ export async function handleRegisterTCR(
     }
 
     if (validTo) {
-      if (!validFrom) {
-        // Default validFrom to now if it is not specified
-        validFrom = validFromLocalized = toCentralEuropeanTimezone(validFrom);
-      }
-
       validToLocalized = toCentralEuropeanTimezone(validTo);
-
-      // Validate validTo not in the past
-      let difference = differenceInCalendarDays(parseISO(validTo), now);
-      if (difference < 0)
-        return next(badRequest('validTo cannot be in the past'));
-
-      // Validate validTo not before validFrom
-      difference = differenceInCalendarDays(
-        parseISO(validTo),
-        parseISO(validFrom)
-      );
-      if (difference < 0)
-        return next(badRequest('validTo cannot be before validFrom'));
+      if (validFrom) {
+        // Validate validTo not before validFrom
+        const difference = differenceInCalendarDays(
+          parseISO(validTo),
+          parseISO(validFrom)
+        );
+        if (difference < 0) {
+          return next(badRequest('validTo cannot be before validFrom'));
+        }
+      }
     }
 
-    const response = await registerTCR({
-      businUnitCode,
-      issuerNUIS,
-      tcrIntID,
-      validFrom: validFromLocalized,
-      validTo: validToLocalized,
-    });
+    const response = await registerTCR(
+      {
+        businUnitCode,
+        issuerNUIS,
+        tcrIntID,
+        validFrom: validFromLocalized,
+        validTo: validToLocalized,
+      },
+      privateKey,
+      certificate
+    );
 
     res.json(response);
   } catch (e) {
@@ -78,15 +75,20 @@ export async function handleCashBalance(
     } = req.validatedBody;
 
     const formattedDateTime = toCentralEuropeanTimezone(changeDateTime);
+    const { privateKey, certificate } = req;
 
-    const response = await cashBalance({
-      changeDateTime: formattedDateTime,
-      issuerNUIS,
-      cashAmt,
-      operation,
-      tcrCode,
-      isSubseqDeliv,
-    });
+    const response = await cashBalance(
+      {
+        changeDateTime: formattedDateTime,
+        issuerNUIS,
+        cashAmt,
+        operation,
+        tcrCode,
+        isSubseqDeliv,
+      },
+      privateKey,
+      certificate
+    );
 
     res.json(response);
   } catch (e) {

@@ -21,3 +21,7 @@ export interface FiscRequest {
 export type SOAPRequestObject = {
   [key: string]: any;
 };
+
+export type SOAPResponseObject = {
+  [key: string]: any;
+};

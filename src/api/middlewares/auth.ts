@@ -1,7 +1,7 @@
 import { Response } from 'express';
 import { NextFn } from '../../types';
 import { authorize } from '../../services/Auth.service';
-import Boom from 'boom';
+import Boom from '@hapi/boom';
 
 export default function auth(req: any, res: Response, next: NextFn) {
   const apiKey = req.header('X-Api-Key');

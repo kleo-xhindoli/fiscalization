@@ -1,6 +1,11 @@
-import joi from 'joi';
+import joi, { string } from 'joi';
 import { notFound, converter } from '../../../../api/middlewares/error';
-import Boom from 'boom';
+import Boom from '@hapi/boom';
+import {
+  ClientFiscalizationError,
+  ServerFiscalizationError,
+  FiscalizationError,
+} from '../../../../utils/errors';
 
 const nextFn = jest.fn();
 const req: any = {};
@@ -36,6 +41,17 @@ describe('Unit | Middleware | Error', () => {
 
       res.status.mockClear();
       res.json.mockClear();
+    });
+
+    it('calls res with a 400 status on JSON parse error', () => {
+      try {
+        JSON.parse('{error}');
+      } catch (e) {
+        converter(e, req, res, nextFn);
+        expect(res.status.mock.calls.length).toBe(1);
+        expect(res.status.mock.calls[0][0]).toBe(400);
+        expect(res.json.mock.calls.length).toBe(1);
+      }
     });
 
     it('calls res with a 400 status on a validation err', () => {
@@ -85,6 +101,77 @@ describe('Unit | Middleware | Error', () => {
       expect(res.status.mock.calls[0][0]).toBe(500);
       expect(res.json.mock.calls.length).toBe(1);
       expect(res.json.mock.calls[0][0].message).toBe('random error');
+    });
+
+    it('calls res with additional data on a ClientFiscalizationError', () => {
+      const error = new ClientFiscalizationError({
+        faultcode: 'env:Client',
+        faultstring: 'Some descriptive message',
+        detail: {
+          code: '41',
+          requestUUID: '11111111-1111-1111-1111-111111111111',
+          responseUUID: '22222222-2222-2222-2222-222222222222',
+        },
+      });
+
+      converter(error, req, res, nextFn);
+
+      expect(res.status.mock.calls.length).toBe(1);
+      expect(res.status.mock.calls[0][0]).toBe(400);
+      expect(res.json.mock.calls.length).toBe(1);
+      expect(res.json.mock.calls[0][0].message).toBe(
+        'Some descriptive message'
+      );
+      expect(res.json.mock.calls[0][0].data).toMatchObject({
+        isFiscalization: true,
+        fault: 'Client',
+        code: '41',
+        requestUUID: '11111111-1111-1111-1111-111111111111',
+        responseUUID: '22222222-2222-2222-2222-222222222222',
+      });
+    });
+
+    it('calls res with additional data on a ServerFiscalizationError', () => {
+      const error = new ServerFiscalizationError({
+        faultcode: 'env:Server',
+        faultstring: 'Some descriptive message',
+        detail: {
+          code: '41',
+          requestUUID: '11111111-1111-1111-1111-111111111111',
+          responseUUID: '22222222-2222-2222-2222-222222222222',
+        },
+      });
+
+      converter(error, req, res, nextFn);
+
+      expect(res.status.mock.calls.length).toBe(1);
+      expect(res.status.mock.calls[0][0]).toBe(500);
+      expect(res.json.mock.calls.length).toBe(1);
+      expect(res.json.mock.calls[0][0].message).toBe(
+        'Some descriptive message'
+      );
+      expect(res.json.mock.calls[0][0].data).toMatchObject({
+        isFiscalization: true,
+        fault: 'Server',
+        code: '41',
+        requestUUID: '11111111-1111-1111-1111-111111111111',
+        responseUUID: '22222222-2222-2222-2222-222222222222',
+      });
+    });
+
+    it('calls res with additional data on a FiscalizationError', () => {
+      const error = new FiscalizationError(new Error('test'));
+
+      converter(error, req, res, nextFn);
+
+      expect(res.status.mock.calls.length).toBe(1);
+      expect(res.status.mock.calls[0][0]).toBe(500);
+      expect(res.json.mock.calls.length).toBe(1);
+      expect(res.json.mock.calls[0][0].message).toBe('test');
+      expect(res.json.mock.calls[0][0].data).toMatchObject({
+        isFiscalization: true,
+        fault: 'Unknown',
+      });
     });
   });
 });

@@ -17,9 +17,15 @@ export const cashBalancePayloadSchema = {
     .iso()
     .max('now')
     .required(),
-  cashAmt: joi
-    .number()
-    .required(),
+  cashAmt: joi.when('operation', {
+    // Allow negative values only when operation is INOUT
+    is: 'INOUT',
+    then: joi.number().required(),
+    otherwise: joi
+      .number()
+      .min(0)
+      .required(),
+  }),
   issuerNUIS: joi.string().required(), // TODO: NUIS regex
   operation: joi
     .string()

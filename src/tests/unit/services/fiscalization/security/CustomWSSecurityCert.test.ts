@@ -1,8 +1,8 @@
 import {
   privateKey as key,
   certificate as cert,
-} from '../../../__test-data__/keys';
-import { WSSecurityCert } from '../../../../services/security/CustomWSSecurityCert';
+} from '../../../../__test-data__/keys';
+import { WSSecurityCert } from '../../../../../services/fiscalization/security/CustomWSSecurityCert';
 
 const configurations = {
   hasTimeStamp: false,

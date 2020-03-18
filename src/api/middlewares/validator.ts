@@ -1,7 +1,7 @@
 import { Response } from 'express';
 import { validate, SchemaMap, object, string } from 'joi';
 import { NextFn } from '../../types';
-import Boom = require('boom');
+import Boom from '@hapi/boom';
 
 export function validateBody(schema: SchemaMap) {
   return (req: any, res: Response, next: NextFn) => {

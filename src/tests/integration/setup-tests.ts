@@ -1,34 +1,10 @@
 import config from '../../config';
 import logger from '../../api/config/logger';
 import app from '../../api/config/express';
-import initSoap from '../../api/config/soap';
-import nock from 'nock';
-import { join as joinPath } from 'path';
+import initSoap, { getClient } from '../../api/config/soap';
+import mockClient from './__mocks__/soap-client';
+import { Client } from 'soap';
 const { port, env } = config;
-
-function mockWSLD() {
-  const wsdl = joinPath(__dirname, './__mocks__/fiscalization-wsdl.xml');
-  nock(config.fiscEndpoint)
-    .get('/FiscalizationService.wsdl')
-    .replyWithFile(200, wsdl, {
-      'Content-Type': 'text/xml',
-      'Keep-Alive': 'timeout=5, max=100',
-      Connection: 'Keep-Alive',
-      'Transfer-Encoding': 'chunked',
-    })
-    .persist();
-
-  const alimc = joinPath(__dirname, './__mocks__/fiscalization-wsdl.xml');
-  nock(config.fiscEndpoint)
-    .get('/alimc-fiscalization-service.xsd')
-    .replyWithFile(200, alimc, {
-      'Content-Type': 'text/xml',
-      'Keep-Alive': 'timeout=5, max=100',
-      Connection: 'Keep-Alive',
-      'Transfer-Encoding': 'chunked',
-    })
-    .persist();
-}
 
 export function initializeServer() {
   return app.listen(port, () => {
@@ -37,11 +13,17 @@ export function initializeServer() {
 }
 
 export async function initializeSOAP() {
-  // mockWSLD();
-  // TODO: fix this
   const client = await initSoap();
   logger.info('SOAP Initialized');
   return client;
+}
+
+export async function initializeMockSOAP() {
+  const client = mockClient as any;
+  logger.info('Mock SOAP Initialized');
+  // @ts-ignore
+  getClient = jest.fn().mockReturnValue(client);
+  return client as Client;
 }
 
 export default app;

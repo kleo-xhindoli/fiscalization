@@ -17,7 +17,19 @@ export class MissingSoapClientError extends BaseError {
 }
 
 export class FiscalizationError extends BaseError {
-  constructor(public error: any, public request: SOAPRequestObject) {
+  constructor(public error: any) {
     super('Fiscalization failed!');
+  }
+}
+
+export class ClientFiscalizationError extends FiscalizationError {
+  constructor(error: any) {
+    super(error);
+  }
+}
+
+export class ServerFiscalizationError extends FiscalizationError {
+  constructor(error: any) {
+    super(error);
   }
 }

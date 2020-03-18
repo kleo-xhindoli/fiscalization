@@ -1,5 +1,5 @@
 import request from 'supertest';
-import app, { initializeServer } from '../../setup-tests';
+import app, { initializeServer, initializeMockSOAP } from '../../setup-tests';
 import { Server } from 'http';
 import { privateKey, certificate } from '../../../__test-data__/keys';
 
@@ -13,6 +13,7 @@ describe('Integration | TCR Routes', () => {
   beforeAll(async done => {
     try {
       server = initializeServer();
+      await initializeMockSOAP();
       done();
     } catch (e) {
       console.error('Failed to init server!');
@@ -138,9 +139,8 @@ describe('Integration | TCR Routes', () => {
       expect(res.status).toBe(400);
     });
 
-    it(`should respond with 400 if validTo is in the past`, async () => {
+    it(`should respond with 200 if validTo is in the past (deactivate TCR)`, async () => {
       const now = new Date();
-      const validFrom = now.toISOString();
       const validTo = subDays(now, 1).toISOString();
 
       const res = await request(app)
@@ -151,7 +151,6 @@ describe('Integration | TCR Routes', () => {
             businUnitCode: 'bb123bb123',
             issuerNUIS: 'I12345678I',
             tcrIntID: 1,
-            validFrom,
             validTo,
           },
           certificates: {
@@ -160,7 +159,7 @@ describe('Integration | TCR Routes', () => {
           },
         });
 
-      expect(res.status).toBe(400);
+      expect(res.status).toBe(200);
     });
 
     it(`should respond with 400 if validTo is before validFrom`, async () => {
@@ -431,6 +430,27 @@ describe('Integration | TCR Routes', () => {
       expect(res.body.body.operation).toBe('INITIAL');
       expect(res.body.body.cashAmt).toBe(2000);
       expect(res.body.body.isSubseqDeliv).toBe(true);
+    });
+
+    it('should respond with 400 if operation is INITIAL and cashAmt is negative', async () => {
+      const res = await request(app)
+        .post('/api/tcrs/cashBalance')
+        .set({ 'X-Api-Key': MAGNUM_API_KEY })
+        .send({
+          payload: {
+            tcrCode: 'bb123bb123',
+            issuerNUIS: 'I12345678I',
+            changeDateTime: '2019-09-03T14:37:31+02:00',
+            operation: 'INITIAL',
+            cashAmt: -200,
+          },
+          certificates: {
+            privateKey,
+            certificate,
+          },
+        });
+
+      expect(res.status).toBe(400);
     });
 
     it('should respond with 400 if any of the required fields are missing', async () => {

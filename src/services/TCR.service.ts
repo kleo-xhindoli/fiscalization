@@ -10,48 +10,65 @@ import {
 } from '../utils/fiscHeaders';
 import uuidv4 from 'uuid/v4';
 import config from '../config';
+import {
+  sendRegisterTCRRequest,
+  sendTCRCashBalanceRequest,
+} from './fiscalization';
 
 export async function registerTCR(
-  tcrRequest: RegisterTCRRequest
+  tcrRequest: RegisterTCRRequest,
+  privateKey: string,
+  certificate: string
 ): Promise<RegisterTCRResponse> {
-  const { UUID: requestUUID, sendDateTime } = generateFiscHeaders();
+  const header = generateFiscHeaders();
 
-  // TODO: Implementation
-  const tcrCode = 'tcr1234';
-  return {
-    header: {
-      requestUUID,
-      sendDateTime,
-      UUID: uuidv4(),
+  const { header: resHeader, body: resBody } = await sendRegisterTCRRequest(
+    {
+      header,
+      body: {
+        ...tcrRequest,
+        maintainerCode: config.fiscMaintainerCode,
+        softCode: config.fiscSoftwareCode,
+      },
     },
+    privateKey,
+    certificate
+  );
+
+  return {
+    header: resHeader,
     body: {
-      tcrCode,
-      softCode: config.fiscSoftwareCode,
-      maintainerCode: config.fiscMaintainerCode,
+      ...resBody,
       ...tcrRequest,
     },
   };
 }
 
 export async function cashBalance(
-  cashBalanceRequest: TCRCashBalanceRequest
+  cashBalanceRequest: TCRCashBalanceRequest,
+  privateKey: string,
+  certificate: string
 ): Promise<TCRCashBalanceResponse> {
-  const { UUID: requestUUID, sendDateTime } = generateSubsequentFiscHeaders(
+  const header = generateSubsequentFiscHeaders(
     cashBalanceRequest.isSubseqDeliv
   );
 
-  const FCDC = uuidv4();
-
-  // TODO: Implementation
-  return {
-    header: {
-      requestUUID,
-      sendDateTime,
-      UUID: uuidv4(),
+  const { header: resHeader, body: resBody } = await sendTCRCashBalanceRequest(
+    {
+      header,
+      body: {
+        ...cashBalanceRequest,
+      },
     },
+    privateKey,
+    certificate
+  );
+
+  return {
+    header: resHeader,
     body: {
+      ...resBody,
       ...cashBalanceRequest,
-      FCDC,
     },
   };
 }
