@@ -46,8 +46,8 @@ export async function handleRegisterTCR(
         businUnitCode,
         issuerNUIS,
         tcrIntID,
-        validFrom: validFromLocalized,
-        validTo: validToLocalized,
+        validFrom: validFromLocalized?.split('T')[0],
+        validTo: validToLocalized?.split('T')[0],
       },
       privateKey,
       certificate

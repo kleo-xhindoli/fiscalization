@@ -4,6 +4,10 @@ import {
   SELF_ISS_TYPES,
   INVOICE_TYPE_CASH,
   PAYMENT_METHOD_TYPES,
+  ID_TYPES,
+  EXEMPT_FROM_VAT_TYPES,
+  CORRECTIVE_INVOICE_TYPES,
+  FEE_TYPES,
 } from '../../../types';
 
 const invoiceItemSchema = joi.object({
@@ -18,6 +22,7 @@ const invoiceItemSchema = joi.object({
     then: joi.boolean().required(),
     otherwise: joi.forbidden(),
   }),
+  exemptFromVAT: joi.string().valid(EXEMPT_FROM_VAT_TYPES),
   VATRate: joi.number().required(),
 });
 
@@ -30,20 +35,45 @@ const consumptionTaxItemsSchema = joi.object({
   priceBefConsTax: joi.number().required(),
 });
 
+const voucherSchema = joi.object({
+  num: joi.string(),
+});
+
+const payMethodSchema = joi.object({
+  type: joi
+    .string()
+    .valid(PAYMENT_METHOD_TYPES)
+    .required(),
+  amt: joi.number(),
+  compCard: joi.string().max(50),
+  vouchers: joi.array().items(voucherSchema),
+});
+
+const feeSchema = joi.object({
+  type: joi
+    .string()
+    .valid(FEE_TYPES)
+    .required(),
+  amt: joi.number().required(),
+});
+
+const summaryIICRefSchema = joi.object({
+  iic: joi.string().required(),
+  issueDateTime: joi
+    .string()
+    .regex(
+      /[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}[+-][0-9]{2}:[0-9]{2}/
+    )
+    .required(),
+});
+
 export const createInvoicePayloadSchema = {
   typeOfInv: joi
     .string()
     .valid(INVOICE_TYPES)
     .required(),
-  selfIssuing: joi.boolean().default(false),
-  typeOfSelfIss: joi.when('selfIssuing', {
-    is: true, // allow only when 'selfIssuing' is true
-    then: joi
-      .string()
-      .valid(SELF_ISS_TYPES)
-      .required(),
-    otherwise: joi.forbidden(),
-  }),
+  isSimplifiedInv: joi.boolean().default(false),
+  typeOfSelfIss: joi.string().valid(SELF_ISS_TYPES),
   dateTimeCreated: joi
     .date()
     .iso()
@@ -52,56 +82,104 @@ export const createInvoicePayloadSchema = {
     .number()
     .min(1)
     .required(),
-  cashRegister: joi.when('typeOfInv', {
+  tcrCode: joi.when('typeOfInv', {
     is: INVOICE_TYPE_CASH, // rquired only for cash invoices
     then: joi.string().required(),
     otherwise: joi.string(),
   }),
-  issuerInVAT: joi.boolean().default(true),
-  taxFreeAmt: joi.number().default(0),
+  isIssuerInVAT: joi.boolean().default(true),
+  taxFreeAmt: joi.when('isIssuerInVAT', {
+    is: false,
+    then: joi.number().required(),
+    otherwise: joi.number(),
+  }),
   markUpAmt: joi.number(),
-  goodsExport: joi.number(),
-  paymentMeth: joi
-    .string()
-    .valid(PAYMENT_METHOD_TYPES)
-    .required(),
+  goodsExAmt: joi.number(),
   operatorCode: joi.string().required(),
-  businUnit: joi.string().required(),
+  businUnitCode: joi.string().required(),
   isSubseqDeliv: joi.boolean(),
-  reverseCharge: joi.boolean(),
-  badDebt: joi.boolean(),
-  issuer: joi
+  isReverseCharge: joi.boolean(),
+  isBadDebt: joi.boolean(),
+  payDeadline: joi
+    .date()
+    .iso()
+    .min('now'),
+  currency: joi.object({
+    code: joi.string().required(),
+    exRate: joi.number().required(),
+  }),
+  supplyDateOrPeriod: joi.object({
+    start: joi
+      .date()
+      .iso()
+      .required(),
+    end: joi
+      .date()
+      .iso()
+      .required(),
+  }),
+  correctiveInvoice: joi.object({
+    iicRef: joi.string().required(),
+    issueDateTime: joi
+      .string()
+      .regex(
+        /[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}[+-][0-9]{2}:[0-9]{2}/
+      )
+      .required(),
+    type: joi
+      .string()
+      .valid(CORRECTIVE_INVOICE_TYPES)
+      .required(),
+  }),
+  seller: joi
     .object({
-      NUIS: joi.string().required(), // TODO: regex
+      idType: joi
+        .string()
+        .valid(ID_TYPES)
+        .required(),
+      idNum: joi.string().required(),
       name: joi.string().required(),
-      address: joi.string().required(),
-      town: joi.string().required(),
-      country: joi.string().default('Albania'),
+      address: joi.string(),
+      town: joi.string(),
+      country: joi.string(),
     })
     .required(),
-  buyer: joi.when('selfIssuing', {
-    is: true,
+  buyer: joi.when('typeOfSelfIss', {
+    is: joi.string().required(), // when typeOfSelfIss is defined
     then: joi
       .object({
-        NUIS: joi.string().required(), // TODO: regex
+        idType: joi
+          .string()
+          .valid(ID_TYPES)
+          .required(),
+        idNum: joi.string().required(),
         name: joi.string().required(),
-        address: joi.string().required(),
-        town: joi.string().required(),
-        country: joi.string().default('Albania'),
+        address: joi.string(),
+        town: joi.string(),
+        country: joi.string(),
       })
       .required(),
     otherwise: joi.object({
-      NUIS: joi.string(), // TODO: regex
+      idType: joi.string().valid(ID_TYPES),
+      idNum: joi.string(),
       name: joi.string(),
       address: joi.string(),
       town: joi.string(),
       country: joi.string(),
     }),
   }),
+
+  payMethods: joi
+    .array()
+    .items(payMethodSchema)
+    .min(1)
+    .required(),
   items: joi
     .array()
     .items(invoiceItemSchema)
     .default([]),
 
-  consumptionTaxItems: joi.array().items(consumptionTaxItemsSchema),
+  consTaxes: joi.array().items(consumptionTaxItemsSchema),
+  fees: joi.array().items(feeSchema),
+  sumIICRefs: joi.array().items(summaryIICRefSchema),
 };

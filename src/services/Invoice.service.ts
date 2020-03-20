@@ -13,8 +13,10 @@ import {
   getSameTaxItemGroups,
   calculateConsTaxAmount,
   calculateTotVATValues,
+  calculateUnitPriceWithVAT,
+  calculateTotalFeesAmount,
 } from '../utils/vat-utls';
-import { generateFiscHeaders } from '../utils/fiscHeaders';
+import { generateSubsequentFiscHeaders } from '../utils/fiscHeaders';
 import config from '../config';
 import uuidv4 from 'uuid/v4';
 import NodeRSA from 'node-rsa';
@@ -23,14 +25,9 @@ import crypto from 'crypto';
 export async function registerInvoice(
   invoiceRequest: RegisterInvoiceRequest,
   privateKey: string,
-  certificate: string,
-  iicReference?: string
+  certificate: string
 ): Promise<RegisterInvoiceResponse> {
-  const fiscInvoiceRequest = getFiscInvoiceRequest(
-    invoiceRequest,
-    privateKey,
-    iicReference
-  );
+  const fiscInvoiceRequest = getFiscInvoiceRequest(invoiceRequest, privateKey);
 
   // TODO: Implement
   const FIC = uuidv4();
@@ -49,13 +46,14 @@ export async function registerInvoice(
 
 function getFiscInvoiceRequest(
   invoiceRequest: RegisterInvoiceRequest,
-  privateKey: string,
-  iicReference?: string
+  privateKey: string
 ): FiscRegisterInvoiceRequest {
   const fiscInvoiceItems = getFiscInvoiceItems(invoiceRequest.items);
-  const requestHeader = generateFiscHeaders();
-  const sameTaxItems = getSameTaxItemGroups(fiscInvoiceItems);
-  const consumptionTaxItems = invoiceRequest.consumptionTaxItems?.map(item => {
+  const requestHeader = generateSubsequentFiscHeaders(
+    invoiceRequest.isSubseqDeliv
+  );
+  const sameTaxes = getSameTaxItemGroups(fiscInvoiceItems);
+  const consTaxes = invoiceRequest.consTaxes?.map(item => {
     return {
       ...item,
       consTaxAmount: calculateConsTaxAmount(
@@ -65,17 +63,23 @@ function getFiscInvoiceRequest(
     };
   });
 
+  let feesTotal = 0;
+  if (invoiceRequest.fees?.length) {
+    feesTotal = calculateTotalFeesAmount(invoiceRequest.fees);
+  }
+
   const { totPrice, totVATAmt, totPriceWoVAT } = calculateTotVATValues(
-    fiscInvoiceItems
+    fiscInvoiceItems,
+    feesTotal
   );
   const invNum = getInvNum(invoiceRequest);
 
   const iicSignature = generateIICSignature(
-    invoiceRequest.issuer.NUIS,
+    invoiceRequest.seller.idNum,
     invoiceRequest.dateTimeCreated,
     invNum,
-    invoiceRequest.businUnit,
-    invoiceRequest.cashRegister || '',
+    invoiceRequest.businUnitCode,
+    invoiceRequest.tcrCode || '',
     config.fiscSoftwareCode,
     totPrice,
     privateKey
@@ -93,29 +97,32 @@ function getFiscInvoiceRequest(
       totPriceWoVAT,
       totVATAmt,
       totPrice,
-      softNum: config.fiscSoftwareCode,
+      softCode: config.fiscSoftwareCode,
       iic,
       iicSignature,
-      iicReference,
-      sameTaxItems,
+      sameTaxes,
       items: fiscInvoiceItems,
-      consumptionTaxItems,
+      consTaxes,
     },
   };
 }
 
 export function getInvNum(invoiceRequest: RegisterInvoiceRequest): string {
   const year = new Date().getFullYear();
-  const { invOrdNum, cashRegister } = invoiceRequest;
+  const { invOrdNum, tcrCode } = invoiceRequest;
 
-  if (invoiceRequest.typeOfInv === INVOICE_TYPE_CASH && cashRegister) {
-    return `${invOrdNum}/${year}/${cashRegister}`;
+  if (invoiceRequest.typeOfInv === INVOICE_TYPE_CASH && tcrCode) {
+    return `${invOrdNum}/${year}/${tcrCode}`;
   }
   return `${invOrdNum}/${year}`;
 }
 
 function getFiscInvoiceItems(items: InvoiceItem[]): FiscInvoiceItem[] {
   return items.map(item => {
+    const unitPriceWithVAT = calculateUnitPriceWithVAT(
+      item.unitPrice,
+      item.VATRate
+    );
     const priceBeforeVAT = calculateItemPriceBeforeVAT(
       item.quantity,
       item.unitPrice,
@@ -132,6 +139,7 @@ function getFiscInvoiceItems(items: InvoiceItem[]): FiscInvoiceItem[] {
 
     return {
       ...item,
+      unitPriceWithVAT,
       priceBeforeVAT,
       VATAmount,
       priceAfterVAT,
@@ -161,6 +169,7 @@ export function generateIICSignature(
     `|${dateTimeCreated}` +
     `|${invoiceNumber}` +
     `|${busiUnit}` +
+    // TODO: Unclear if we should ignore when no cashRegister in invoice
     `|${cashRegister}` +
     `|${softNum}` +
     `|${totalPrice}`;

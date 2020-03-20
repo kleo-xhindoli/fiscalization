@@ -28,12 +28,10 @@ function transformRegisterTCRRequest(
   };
 
   if (request.body.validFrom) {
-    soapRequest[':TCR'].attributes.ValidFrom = request.body.validFrom.split(
-      'T'
-    )[0];
+    soapRequest[':TCR'].attributes.ValidFrom = request.body.validFrom;
   }
   if (request.body.validTo) {
-    soapRequest[':TCR'].attributes.ValidTo = request.body.validTo.split('T')[0];
+    soapRequest[':TCR'].attributes.ValidTo = request.body.validTo;
   }
 
   return soapRequest;

@@ -1,6 +1,5 @@
 import { FiscRequestHeader, FiscRequestHeaderSubsequent } from '../types';
 import uuidv4 from 'uuid/v4';
-import { formatToTimeZone } from 'date-fns-timezone';
 import { toCentralEuropeanTimezone } from './date-utils';
 
 export function generateFiscHeaders(): FiscRequestHeader {

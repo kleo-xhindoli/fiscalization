@@ -4,28 +4,39 @@ import {
   generateIIC,
   generateIICSignature,
 } from '../../../services/Invoice.service';
-import { InvoiceType, PaymentMethod } from '../../../types';
+import {
+  INVOICE_TYPE_NON_CASH,
+  INVOICE_TYPE_CASH,
+  PAYMENT_METHOD_TYPE_BANKNOTE,
+  RegisterInvoiceRequest,
+  ID_TYPE_NUIS,
+} from '../../../types';
 import { exampleKey, privateKey, certificate } from '../../__test-data__/keys';
 
 describe('Unit | Service | Invoice', () => {
-  const request = {
-    badDebt: false,
-    businUnit: 'bg517kw842',
-    cashRegister: 'xb131ap287',
+  const request: RegisterInvoiceRequest = {
+    isBadDebt: false,
+    isSimplifiedInv: false,
+    businUnitCode: 'bg517kw842',
+    tcrCode: 'xb131ap287',
     dateTimeCreated: '2019-09-26T13:50:13+02:00',
     invOrdNum: 6,
     isSubseqDeliv: false,
-    issuerInVAT: true,
+    isIssuerInVAT: true,
     operatorCode: 'rf135zu420',
-    paymentMeth: 'N' as PaymentMethod,
-    reverseCharge: false,
-    selfIssuing: false,
-    typeOfInv: 'C' as InvoiceType,
+    payMethods: [
+      {
+        type: PAYMENT_METHOD_TYPE_BANKNOTE,
+      },
+    ],
+    isReverseCharge: false,
+    typeOfInv: INVOICE_TYPE_CASH,
     taxFreeAmt: 0,
-    issuer: {
+    seller: {
       address: 'Rruga i ri 1',
       country: 'Albania',
-      NUIS: 'L91806031N',
+      idType: ID_TYPE_NUIS,
+      idNum: 'L91806031N',
       name: 'Coca-Cola LTD',
       town: 'Tirana',
     },
@@ -58,22 +69,26 @@ describe('Unit | Service | Invoice', () => {
       expect(response.header).toBeDefined();
       expect(response.body).toBeDefined();
       expect(response.body).toMatchObject({
-        badDebt: false,
-        businUnit: 'bg517kw842',
-        cashRegister: 'xb131ap287',
+        isBadDebt: false,
+        businUnitCode: 'bg517kw842',
+        tcrCode: 'xb131ap287',
         dateTimeCreated: '2019-09-26T13:50:13+02:00',
         invOrdNum: 6,
         isSubseqDeliv: false,
-        issuerInVAT: true,
+        isIssuerInVAT: true,
         operatorCode: 'rf135zu420',
-        paymentMeth: 'N',
-        reverseCharge: false,
-        selfIssuing: false,
-        typeOfInv: 'C',
-        issuer: {
+        payMethods: [
+          {
+            type: PAYMENT_METHOD_TYPE_BANKNOTE,
+          },
+        ],
+        isReverseCharge: false,
+        typeOfInv: INVOICE_TYPE_CASH,
+        seller: {
           address: 'Rruga i ri 1',
           country: 'Albania',
-          NUIS: 'L91806031N',
+          idType: ID_TYPE_NUIS,
+          idNum: 'L91806031N',
           name: 'Coca-Cola LTD',
           town: 'Tirana',
         },
@@ -86,6 +101,7 @@ describe('Unit | Service | Invoice', () => {
             rebateReducingBasePrice: true,
             unitOfMeasure: 'piece',
             unitPrice: 199,
+            unitPriceWithVAT: 238.8,
             VATRate: 20,
             priceBeforeVAT: 199,
             VATAmount: 39.8,
@@ -99,6 +115,7 @@ describe('Unit | Service | Invoice', () => {
             rebateReducingBasePrice: true,
             unitOfMeasure: 'piece',
             unitPrice: 199,
+            unitPriceWithVAT: 230.84,
             VATRate: 16,
             priceBeforeVAT: 199,
             VATAmount: 31.84,
@@ -110,8 +127,8 @@ describe('Unit | Service | Invoice', () => {
         totPriceWoVAT: 398,
         totVATAmt: 71.64,
         totPrice: 469.64,
-        softNum: 'abc123',
-        sameTaxItems: [
+        softCode: 'abc123',
+        sameTaxes: [
           {
             VATRate: 16,
             numOfItems: 1,
@@ -143,7 +160,10 @@ describe('Unit | Service | Invoice', () => {
     });
 
     it('should return the formatted invNum when request type is NonCash', () => {
-      const invNum = getInvNum({ ...request, typeOfInv: 'N' });
+      const invNum = getInvNum({
+        ...request,
+        typeOfInv: INVOICE_TYPE_NON_CASH,
+      });
       expect(invNum).toBe('6/2020');
     });
   });

@@ -2,24 +2,29 @@ import request from 'supertest';
 import app, { initializeServer } from '../../setup-tests';
 import { Server } from 'http';
 import { privateKey, certificate } from '../../../__test-data__/keys';
+import { addDays, subDays } from 'date-fns';
 
 const payload = {
-  badDebt: false,
-  businUnit: 'bg517kw842',
-  cashRegister: 'xb131ap287',
-  dateTimeCreated: '2019-09-26T13:50:13+02:00',
-  invOrdNum: 6,
+  isBadDebt: 'false',
+  businUnitCode: 'bg517kw842',
+  tcrCode: 'vb721zy972',
+  dateTimeCreated: '2020-03-19T12:23:09.658Z',
+  invOrdNum: 1,
   isSubseqDeliv: false,
-  issuerInVAT: true,
-  operatorCode: 'rf135zu420',
-  paymentMeth: 'N',
-  reverseCharge: 'false',
-  selfIssuing: 'false',
-  typeOfInv: 'C',
-  issuer: {
+  isIssuerInVAT: true,
+  operatorCode: 'ax083bc420',
+  payMethods: [
+    {
+      type: 'BANKNOTE',
+    },
+  ],
+  isReverseCharge: false,
+  typeOfInv: 'CASH',
+  seller: {
     address: 'Rruga i ri 1',
     country: 'Albania',
-    NUIS: 'L91806031N',
+    idType: 'NUIS',
+    idNum: 'L91806031N',
     name: 'Coca-Cola LTD',
     town: 'Tirana',
   },
@@ -32,7 +37,7 @@ const payload = {
       rebateReducingBasePrice: true,
       unitOfMeasure: 'piece',
       unitPrice: 199,
-      VATRate: 20.0,
+      VATRate: 20,
     },
     {
       code: '501234567890',
@@ -42,7 +47,7 @@ const payload = {
       rebateReducingBasePrice: true,
       unitOfMeasure: 'piece',
       unitPrice: 199,
-      VATRate: 16.0,
+      VATRate: 16,
     },
   ],
 };
@@ -105,22 +110,26 @@ describe('Integration | Invoice routes', () => {
       // body
       expect(res.body.body.FIC).toBeDefined();
       expect(res.body.body).toMatchObject({
-        badDebt: false,
-        businUnit: 'bg517kw842',
-        cashRegister: 'xb131ap287',
-        dateTimeCreated: '2019-09-26T13:50:13+02:00',
-        invOrdNum: 6,
+        isBadDebt: false,
+        businUnitCode: 'bg517kw842',
+        tcrCode: 'vb721zy972',
+        dateTimeCreated: '2020-03-19T13:23:09+01:00',
+        invOrdNum: 1,
         isSubseqDeliv: false,
-        issuerInVAT: true,
-        operatorCode: 'rf135zu420',
-        paymentMeth: 'N',
-        reverseCharge: false,
-        selfIssuing: false,
-        typeOfInv: 'C',
-        issuer: {
+        isIssuerInVAT: true,
+        operatorCode: 'ax083bc420',
+        payMethods: [
+          {
+            type: 'BANKNOTE',
+          },
+        ],
+        isReverseCharge: false,
+        typeOfInv: 'CASH',
+        seller: {
           address: 'Rruga i ri 1',
           country: 'Albania',
-          NUIS: 'L91806031N',
+          idType: 'NUIS',
+          idNum: 'L91806031N',
           name: 'Coca-Cola LTD',
           town: 'Tirana',
         },
@@ -133,6 +142,7 @@ describe('Integration | Invoice routes', () => {
             rebateReducingBasePrice: true,
             unitOfMeasure: 'piece',
             unitPrice: 199,
+            unitPriceWithVAT: 238.8,
             VATRate: 20,
             priceBeforeVAT: 199,
             VATAmount: 39.8,
@@ -145,6 +155,7 @@ describe('Integration | Invoice routes', () => {
             rebate: 0,
             rebateReducingBasePrice: true,
             unitOfMeasure: 'piece',
+            unitPriceWithVAT: 230.84,
             unitPrice: 199,
             VATRate: 16,
             priceBeforeVAT: 199,
@@ -152,16 +163,15 @@ describe('Integration | Invoice routes', () => {
             priceAfterVAT: 230.84,
           },
         ],
-        taxFreeAmt: 0,
-        invNum: '6/2020/xb131ap287',
+        invNum: '1/2020/vb721zy972',
         totPriceWoVAT: 398,
         totVATAmt: 71.64,
         totPrice: 469.64,
-        softNum: 'abc123',
-        iic: '8A895FD61406F2EEDE79BDC8BFF11B96',
+        softCode: 'abc123',
+        iic: 'BDD49A6928BF04AB5FCBEEB9CF5504F8',
         iicSignature:
-          '455791F7752C10EC6A410DBE5BD3FC52F27AA63526A296BA142EEE1F9001CD9A2BFBD49A268126ADD975A1E89F5D945DC7870CA78BB38C1CFA2E7D5BC2C95B119A74E738962308763B962A6F884107242D5A8B397D00AB158ECAB0AAAC7CC0FC3A444E5A1AFA7A6F35CF77D7019BA2A1ED7E7CAF9C2F981A0BBF659A957ECCCD5B3218097AA00FB26F515F8AC73583F0430EF30A0D0C43D4F3BFC0214F09CC899CAC034DA07A393EBD12E0168BE5F336B2DE806F22F94122EE36FD406EBA85563BFF1727DAC9CFBD5EB10BDB5793233C278057DE0BA9A13288888C3D0E6D7258643BBDF4689E5B161CEA6D4255E5F7F7C7465E0BB2B42B6F818DCB32F1AE5A1F',
-        sameTaxItems: [
+          '605D54B1C9369FF16A5408A97F6F3416E94C77BF89DC8B986A59DDAD63121FC8551E8C2A5D823A12DFA254415CAAED4C91D9D0E15D911FB744B2BE2746797A5BCECA1A919FF1A4CE4ECFE85061EAB2D9B1E43BA5E93046711845F4A136BCAC2E075770DA5C8B02013EACEE5B5416E18BC423526E4ECB636652B2BF144D32B7C35D14A3DF41E8638EFE5B53D577314661D8C1711E9D782F79ED1DA83F462551550CA5EACE77888CCE08D98612B424B343E3969C7C95D7E4E27C07F598A54F05B7F8BD8F81C1870A45A8709AE2A5D5A84D0D17C92C9C934507E710164B4BB5AC228A87627610950FDEE0E7BCD134A32EC1948A7DAB2457435D53DF25CD22B1180E',
+        sameTaxes: [
           {
             VATRate: 16,
             numOfItems: 1,
@@ -186,7 +196,7 @@ describe('Integration | Invoice routes', () => {
         .send({
           payload: {
             ...payload,
-            typeOfInv: 'N',
+            typeOfInv: 'NON-CASH',
             cashRegister: undefined,
           },
           certificates: {
@@ -196,7 +206,7 @@ describe('Integration | Invoice routes', () => {
         });
       expect(res.status).toBe(200);
       expect(res.body.header).toBeDefined();
-      expect(res.body.body.invNum).toBe('6/2020');
+      expect(res.body.body.invNum).toBe('1/2020');
     });
 
     it(`should respond with 200 when creating a selfIssuing
@@ -207,10 +217,9 @@ describe('Integration | Invoice routes', () => {
         .send({
           payload: {
             ...payload,
-            selfIssuing: true,
-            typeOfSelfIss: 'P',
+            typeOfSelfIss: 'DOMESTIC',
             buyer: {
-              ...payload.issuer,
+              ...payload.seller,
             },
           },
           certificates: {
@@ -275,7 +284,7 @@ describe('Integration | Invoice routes', () => {
         .send({
           payload: {
             ...payload,
-            paymentMeth: undefined,
+            payMethods: undefined,
           },
           certificates: {
             privateKey,
@@ -305,7 +314,7 @@ describe('Integration | Invoice routes', () => {
         .send({
           payload: {
             ...payload,
-            businUnit: undefined,
+            businUnitCode: undefined,
           },
           certificates: {
             privateKey,
@@ -320,7 +329,7 @@ describe('Integration | Invoice routes', () => {
         .send({
           payload: {
             ...payload,
-            issuer: undefined,
+            seller: undefined,
           },
           certificates: {
             privateKey,
@@ -330,35 +339,13 @@ describe('Integration | Invoice routes', () => {
       expect(res.status).toBe(400);
     });
 
-    it(`should respond with 400 if selfIssuing is true
-      and typeOfSelfIss is missing`, async () => {
+    it(`should respond with 400 if typeOfSelfIss is not a valid type`, async () => {
       const res = await request(app)
         .post('/api/invoices/register')
         .set({ 'X-Api-Key': MAGNUM_API_KEY })
         .send({
           payload: {
             ...payload,
-            selfIssuing: true,
-            typeOfSelfIss: undefined,
-          },
-          certificates: {
-            privateKey,
-            certificate,
-          },
-        });
-
-      expect(res.status).toBe(400);
-    });
-
-    it(`should respond with 400 if selfIssuing is true
-      and typeOfSelfIss is not a valid type`, async () => {
-      const res = await request(app)
-        .post('/api/invoices/register')
-        .set({ 'X-Api-Key': MAGNUM_API_KEY })
-        .send({
-          payload: {
-            ...payload,
-            selfIssuing: true,
             typeOfSelfIss: 'Q',
           },
           certificates: {
@@ -367,25 +354,6 @@ describe('Integration | Invoice routes', () => {
           },
         });
 
-      expect(res.status).toBe(400);
-    });
-
-    it(`should respond with 400 if selfIssuing is false
-      and typeOfSelfIss is provided`, async () => {
-      const res = await request(app)
-        .post('/api/invoices/register')
-        .set({ 'X-Api-Key': MAGNUM_API_KEY })
-        .send({
-          payload: {
-            ...payload,
-            selfIssuing: true,
-            typeOfSelfIss: 'S',
-          },
-          certificates: {
-            privateKey,
-            certificate,
-          },
-        });
       expect(res.status).toBe(400);
     });
 
@@ -432,18 +400,19 @@ describe('Integration | Invoice routes', () => {
         .send({
           payload: {
             ...payload,
-            typeOfInv: 'C',
-            cashRegister: undefined,
+            typeOfInv: 'CASH',
+            tcrCode: undefined,
           },
           certificates: {
             privateKey,
             certificate,
           },
         });
+
       expect(res.status).toBe(400);
     });
 
-    it(`should respond with 400 if paymentMeth is not a valid
+    it(`should respond with 400 if payMethods is not a valid
       payment method`, async () => {
       const res = await request(app)
         .post('/api/invoices/register')
@@ -451,7 +420,11 @@ describe('Integration | Invoice routes', () => {
         .send({
           payload: {
             ...payload,
-            paymentMeth: 'F',
+            payMethods: [
+              {
+                type: 'INVALID',
+              },
+            ],
           },
           certificates: {
             privateKey,
@@ -461,7 +434,43 @@ describe('Integration | Invoice routes', () => {
       expect(res.status).toBe(400);
     });
 
-    it(`should respond with 400 if selfIssuing is true and
+    it(`should respond with 400 if payMethods is not an array`, async () => {
+      const res = await request(app)
+        .post('/api/invoices/register')
+        .set({ 'X-Api-Key': MAGNUM_API_KEY })
+        .send({
+          payload: {
+            ...payload,
+            payMethods: {
+              type: 'INVALID',
+            },
+          },
+          certificates: {
+            privateKey,
+            certificate,
+          },
+        });
+      expect(res.status).toBe(400);
+    });
+
+    it(`should respond with 400 if payMethods is empty`, async () => {
+      const res = await request(app)
+        .post('/api/invoices/register')
+        .set({ 'X-Api-Key': MAGNUM_API_KEY })
+        .send({
+          payload: {
+            ...payload,
+            payMethods: [],
+          },
+          certificates: {
+            privateKey,
+            certificate,
+          },
+        });
+      expect(res.status).toBe(400);
+    });
+
+    it(`should respond with 400 if typeOfSelfIss is defined and
       buyer info is missing`, async () => {
       const res = await request(app)
         .post('/api/invoices/register')
@@ -469,7 +478,7 @@ describe('Integration | Invoice routes', () => {
         .send({
           payload: {
             ...payload,
-            selfIssuing: true,
+            typeOfSelfIss: 'AGREEMENT',
             buyer: undefined,
           },
           certificates: {
@@ -646,8 +655,8 @@ describe('Integration | Invoice routes', () => {
       expect(res.status).toBe(400);
     });
 
-    // consumptionTaxItems
-    it(`should respond with 400 if consumptionTaxItems
+    // consTaxes
+    it(`should respond with 400 if consTaxes
       is defined but required fields are missing`, async () => {
       let res = await request(app)
         .post('/api/invoices/register')
@@ -655,7 +664,7 @@ describe('Integration | Invoice routes', () => {
         .send({
           payload: {
             ...payload,
-            consumptionTaxItems: [
+            consTaxes: [
               {
                 consTaxRate: 20.0,
                 numOfItems: 1,
@@ -675,7 +684,7 @@ describe('Integration | Invoice routes', () => {
         .send({
           payload: {
             ...payload,
-            consumptionTaxItems: [
+            consTaxes: [
               {
                 consTaxRate: 20.0,
                 priceBefConsTax: 14.0,
@@ -695,7 +704,7 @@ describe('Integration | Invoice routes', () => {
         .send({
           payload: {
             ...payload,
-            consumptionTaxItems: [
+            consTaxes: [
               {
                 numOfItems: 1,
                 priceBefConsTax: 14.0,
@@ -710,14 +719,14 @@ describe('Integration | Invoice routes', () => {
       expect(res.status).toBe(400);
     });
 
-    it(`should respond with 200 with valid consumptionTaxItems`, async () => {
+    it(`should respond with 200 with valid consTaxes`, async () => {
       let res = await request(app)
         .post('/api/invoices/register')
         .set({ 'X-Api-Key': MAGNUM_API_KEY })
         .send({
           payload: {
             ...payload,
-            consumptionTaxItems: [
+            consTaxes: [
               {
                 consTaxRate: 20.0,
                 numOfItems: 1,
@@ -731,7 +740,7 @@ describe('Integration | Invoice routes', () => {
           },
         });
       expect(res.status).toBe(200);
-      expect(res.body.body.consumptionTaxItems).toMatchObject([
+      expect(res.body.body.consTaxes).toMatchObject([
         {
           consTaxRate: 20,
           numOfItems: 1,
@@ -739,6 +748,316 @@ describe('Integration | Invoice routes', () => {
           consTaxAmount: 2.8,
         },
       ]);
+    });
+
+    // payDeadline
+    it('responds with 200 if payDeadline is provided', async () => {
+      const res = await request(app)
+        .post('/api/invoices/register')
+        .set({ 'X-Api-Key': MAGNUM_API_KEY })
+        .send({
+          payload: {
+            ...payload,
+            payDeadline: addDays(new Date(), 2).toISOString(),
+          },
+          certificates: {
+            privateKey,
+            certificate,
+          },
+        });
+      expect(res.status).toBe(200);
+      expect(res.body.body.payDeadline).toBeDefined();
+    });
+
+    it('responds with 400 if payDeadline is not a valid ISO date', async () => {
+      const res = await request(app)
+        .post('/api/invoices/register')
+        .set({ 'X-Api-Key': MAGNUM_API_KEY })
+        .send({
+          payload: {
+            ...payload,
+            payDeadline: addDays(new Date(), 2).toDateString(),
+          },
+          certificates: {
+            privateKey,
+            certificate,
+          },
+        });
+      expect(res.status).toBe(400);
+    });
+
+    it('responds with 400 if payDeadline is in the past', async () => {
+      const res = await request(app)
+        .post('/api/invoices/register')
+        .set({ 'X-Api-Key': MAGNUM_API_KEY })
+        .send({
+          payload: {
+            ...payload,
+            payDeadline: subDays(new Date(), 2).toISOString(),
+          },
+          certificates: {
+            privateKey,
+            certificate,
+          },
+        });
+      expect(res.status).toBe(400);
+    });
+
+    // Currency
+    it('responds with 200 if currency info is provided', async () => {
+      const res = await request(app)
+        .post('/api/invoices/register')
+        .set({ 'X-Api-Key': MAGNUM_API_KEY })
+        .send({
+          payload: {
+            ...payload,
+            currency: {
+              code: 'EUR',
+              exRate: 122.33,
+            },
+          },
+          certificates: {
+            privateKey,
+            certificate,
+          },
+        });
+      expect(res.status).toBe(200);
+      expect(res.body.body.currency).toMatchObject({
+        code: 'EUR',
+        exRate: 122.33,
+      });
+    });
+
+    // supplyDateOrPeriod
+    it('responds with 200 if supplyDateOrPeriod range is provided', async () => {
+      const res = await request(app)
+        .post('/api/invoices/register')
+        .set({ 'X-Api-Key': MAGNUM_API_KEY })
+        .send({
+          payload: {
+            ...payload,
+            supplyDateOrPeriod: {
+              start: '2020-03-19T13:23:09+01:00',
+              end: '2020-03-20T13:23:09+01:00',
+            },
+          },
+          certificates: {
+            privateKey,
+            certificate,
+          },
+        });
+      expect(res.status).toBe(200);
+      expect(res.body.body.supplyDateOrPeriod).toMatchObject({
+        start: '2020-03-19',
+        end: '2020-03-20',
+      });
+    });
+
+    it('responds with 200 if supplyDateOrPeriod moment is provided', async () => {
+      const res = await request(app)
+        .post('/api/invoices/register')
+        .set({ 'X-Api-Key': MAGNUM_API_KEY })
+        .send({
+          payload: {
+            ...payload,
+            supplyDateOrPeriod: {
+              start: '2020-03-19T13:23:09+01:00',
+              end: '2020-03-19T13:23:09+01:00',
+            },
+          },
+          certificates: {
+            privateKey,
+            certificate,
+          },
+        });
+      expect(res.status).toBe(200);
+      expect(res.body.body.supplyDateOrPeriod).toMatchObject({
+        start: '2020-03-19',
+        end: '2020-03-19',
+      });
+    });
+
+    it('responds with 400 if supplyDateOrPeriod object is not valid', async () => {
+      let res = await request(app)
+        .post('/api/invoices/register')
+        .set({ 'X-Api-Key': MAGNUM_API_KEY })
+        .send({
+          payload: {
+            ...payload,
+            supplyDateOrPeriod: {
+              start: '2020-03-19T13:23:09+01:00',
+              // end: '2020-03-19T13:23:09+01:00',
+            },
+          },
+          certificates: {
+            privateKey,
+            certificate,
+          },
+        });
+      expect(res.status).toBe(400);
+
+      res = await request(app)
+        .post('/api/invoices/register')
+        .set({ 'X-Api-Key': MAGNUM_API_KEY })
+        .send({
+          payload: {
+            ...payload,
+            supplyDateOrPeriod: {
+              // start: '2020-03-19T13:23:09+01:00',
+              end: '2020-03-19T13:23:09+01:00',
+            },
+          },
+          certificates: {
+            privateKey,
+            certificate,
+          },
+        });
+      expect(res.status).toBe(400);
+    });
+
+    // correctiveInvoice
+    it('responds with 200 if correctiveInvoice type CORRECTIVE info is provided', async () => {
+      const res = await request(app)
+        .post('/api/invoices/register')
+        .set({ 'X-Api-Key': MAGNUM_API_KEY })
+        .send({
+          payload: {
+            ...payload,
+            correctiveInvoice: {
+              iicRef: '8A895FD61406F2EEDE79BDC8BFF11B96',
+              issueDateTime: '2020-03-19T13:23:09+01:00',
+              type: 'CORRECTIVE',
+            },
+          },
+          certificates: {
+            privateKey,
+            certificate,
+          },
+        });
+      expect(res.status).toBe(200);
+      expect(res.body.body.correctiveInvoice).toMatchObject({
+        iicRef: '8A895FD61406F2EEDE79BDC8BFF11B96',
+        issueDateTime: '2020-03-19T13:23:09+01:00',
+        type: 'CORRECTIVE',
+      });
+    });
+
+    it('responds with 400 if correctiveInvoice date is not a valid ISO date', async () => {
+      const res = await request(app)
+        .post('/api/invoices/register')
+        .set({ 'X-Api-Key': MAGNUM_API_KEY })
+        .send({
+          payload: {
+            ...payload,
+            correctiveInvoice: {
+              iicRef: '8A895FD61406F2EEDE79BDC8BFF11B96',
+              issueDateTime: new Date().toDateString(),
+              type: 'CORRECTIVE',
+            },
+          },
+          certificates: {
+            privateKey,
+            certificate,
+          },
+        });
+      expect(res.status).toBe(400);
+    });
+
+    // Fees
+    it('responds with 200 if fees are provided', async () => {
+      const res = await request(app)
+        .post('/api/invoices/register')
+        .set({ 'X-Api-Key': MAGNUM_API_KEY })
+        .send({
+          payload: {
+            ...payload,
+            fees: [
+              {
+                type: 'PACK',
+                amt: 240,
+              },
+            ],
+          },
+          certificates: {
+            privateKey,
+            certificate,
+          },
+        });
+      expect(res.status).toBe(200);
+      expect(res.body.body.fees).toMatchObject([
+        {
+          type: 'PACK',
+          amt: 240,
+        },
+      ]);
+
+      expect(res.body.body.totPrice).toBe(709.64);
+      expect(res.body.body.totPriceWoVAT).toBe(638);
+    });
+
+    // Summary Invoice
+    it('responds with 200 if sumIICRefs are provided', async () => {
+      const res = await request(app)
+        .post('/api/invoices/register')
+        .set({ 'X-Api-Key': MAGNUM_API_KEY })
+        .send({
+          payload: {
+            ...payload,
+            sumIICRefs: [
+              {
+                iic: '8A895FD61406F2EEDE79BDC8BFF11B96',
+                issueDateTime: '2020-03-19T13:23:09+01:00',
+              },
+              {
+                iic: '8A895FD61406F2EEDE79BDC8BFF11B96',
+                issueDateTime: '2020-03-19T13:23:09+01:00',
+              },
+            ],
+          },
+          certificates: {
+            privateKey,
+            certificate,
+          },
+        });
+      expect(res.status).toBe(200);
+      expect(res.body.body.sumIICRefs).toMatchObject([
+        {
+          iic: '8A895FD61406F2EEDE79BDC8BFF11B96',
+          issueDateTime: '2020-03-19T13:23:09+01:00',
+        },
+        {
+          iic: '8A895FD61406F2EEDE79BDC8BFF11B96',
+          issueDateTime: '2020-03-19T13:23:09+01:00',
+        },
+      ]);
+    });
+
+    it('responds with 400 if issueDateTime inside sumIICRefs is not a valid ISO date', async () => {
+      const res = await request(app)
+        .post('/api/invoices/register')
+        .set({ 'X-Api-Key': MAGNUM_API_KEY })
+        .send({
+          payload: {
+            ...payload,
+            sumIICRefs: [
+              {
+                iic: '8A895FD61406F2EEDE79BDC8BFF11B96',
+                issueDateTime: new Date(
+                  '2020-03-19T13:23:09+01:00'
+                ).toDateString(),
+              },
+              {
+                iic: '8A895FD61406F2EEDE79BDC8BFF11B96',
+                issueDateTime: '2020-03-19T13:23:09+01:00',
+              },
+            ],
+          },
+          certificates: {
+            privateKey,
+            certificate,
+          },
+        });
+      expect(res.status).toBe(400);
     });
   });
 });

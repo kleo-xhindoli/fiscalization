@@ -14,6 +14,15 @@ export async function handleRegisterInvoice(
       request.dateTimeCreated
     );
 
+    if (request.supplyDateOrPeriod) {
+      // Strip time info from start/end dates
+      const { start, end } = request.supplyDateOrPeriod;
+      request.supplyDateOrPeriod = {
+        start: toCentralEuropeanTimezone(start).split('T')[0],
+        end: toCentralEuropeanTimezone(end).split('T')[0],
+      };
+    }
+
     const { privateKey, certificate } = req;
 
     const response = await registerInvoice(request, privateKey, certificate);
@@ -24,28 +33,30 @@ export async function handleRegisterInvoice(
   }
 }
 
-export async function handleModifyInvoice(
-  req: Request,
-  res: Response,
-  next: NextFn
-) {
-  try {
-    const request: RegisterInvoiceRequest = req.validatedBody;
-    const iicRef: string = req.params.iic;
-    request.dateTimeCreated = toCentralEuropeanTimezone(
-      request.dateTimeCreated
-    );
-    const { privateKey, certificate } = req;
+// NOTE: Invoice correction will be done through the normal route for now
 
-    const response = await registerInvoice(
-      request,
-      iicRef,
-      privateKey,
-      certificate
-    );
+// export async function handleModifyInvoice(
+//   req: Request,
+//   res: Response,
+//   next: NextFn
+// ) {
+//   try {
+//     const request: RegisterInvoiceRequest = req.validatedBody;
+//     const iicRef: string = req.params.iic;
+//     request.dateTimeCreated = toCentralEuropeanTimezone(
+//       request.dateTimeCreated
+//     );
+//     const { privateKey, certificate } = req;
 
-    res.json(response);
-  } catch (e) {
-    next(e);
-  }
-}
+//     const response = await registerInvoice(
+//       request,
+//       privateKey,
+//       certificate,
+//       iicRef,
+//     );
+
+//     res.json(response);
+//   } catch (e) {
+//     next(e);
+//   }
+// }
