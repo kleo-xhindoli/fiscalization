@@ -21,6 +21,7 @@ import config from '../config';
 import uuidv4 from 'uuid/v4';
 import NodeRSA from 'node-rsa';
 import crypto from 'crypto';
+import { sendRegisterInvoiceRequest } from './fiscalization';
 
 export async function registerInvoice(
   invoiceRequest: RegisterInvoiceRequest,
@@ -29,17 +30,17 @@ export async function registerInvoice(
 ): Promise<RegisterInvoiceResponse> {
   const fiscInvoiceRequest = getFiscInvoiceRequest(invoiceRequest, privateKey);
 
-  // TODO: Implement
-  const FIC = uuidv4();
+  const res = await sendRegisterInvoiceRequest(
+    fiscInvoiceRequest,
+    privateKey,
+    certificate
+  );
+
   return {
-    header: {
-      sendDateTime: fiscInvoiceRequest.header.sendDateTime,
-      requestUUID: fiscInvoiceRequest.header.UUID,
-      UUID: uuidv4(),
-    },
+    header: res.header,
     body: {
       ...fiscInvoiceRequest.body,
-      FIC,
+      ...res.body,
     },
   };
 }
@@ -76,7 +77,7 @@ function getFiscInvoiceRequest(
 
   const iicSignature = generateIICSignature(
     invoiceRequest.seller.idNum,
-    invoiceRequest.dateTimeCreated,
+    invoiceRequest.issueDateTime,
     invNum,
     invoiceRequest.businUnitCode,
     invoiceRequest.tcrCode || '',
@@ -111,7 +112,8 @@ export function getInvNum(invoiceRequest: RegisterInvoiceRequest): string {
   const year = new Date().getFullYear();
   const { invOrdNum, tcrCode } = invoiceRequest;
 
-  if (invoiceRequest.typeOfInv === INVOICE_TYPE_CASH && tcrCode) {
+  // if (invoiceRequest.typeOfInv === INVOICE_TYPE_CASH && tcrCode) {
+  if (tcrCode) {
     return `${invOrdNum}/${year}/${tcrCode}`;
   }
   return `${invOrdNum}/${year}`;
@@ -156,7 +158,7 @@ export function generateIIC(signature: string) {
 
 export function generateIICSignature(
   issuerNuis: string,
-  dateTimeCreated: string,
+  issueDateTime: string,
   invoiceNumber: string,
   busiUnit: string,
   cashRegister: string,
@@ -166,7 +168,7 @@ export function generateIICSignature(
 ) {
   const iicInput =
     `${issuerNuis}` +
-    `|${dateTimeCreated}` +
+    `|${issueDateTime}` +
     `|${invoiceNumber}` +
     `|${busiUnit}` +
     // TODO: Unclear if we should ignore when no cashRegister in invoice

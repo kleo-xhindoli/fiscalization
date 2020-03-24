@@ -10,9 +10,7 @@ export async function handleRegisterInvoice(
 ) {
   try {
     const request: RegisterInvoiceRequest = req.validatedBody;
-    request.dateTimeCreated = toCentralEuropeanTimezone(
-      request.dateTimeCreated
-    );
+    request.issueDateTime = toCentralEuropeanTimezone(request.issueDateTime);
 
     if (request.supplyDateOrPeriod) {
       // Strip time info from start/end dates
@@ -21,6 +19,12 @@ export async function handleRegisterInvoice(
         start: toCentralEuropeanTimezone(start).split('T')[0],
         end: toCentralEuropeanTimezone(end).split('T')[0],
       };
+    }
+
+    if (request.payDeadline) {
+      request.payDeadline = toCentralEuropeanTimezone(
+        request.payDeadline
+      ).split('T')[0];
     }
 
     const { privateKey, certificate } = req;
@@ -43,8 +47,8 @@ export async function handleRegisterInvoice(
 //   try {
 //     const request: RegisterInvoiceRequest = req.validatedBody;
 //     const iicRef: string = req.params.iic;
-//     request.dateTimeCreated = toCentralEuropeanTimezone(
-//       request.dateTimeCreated
+//     request.issueDateTime = toCentralEuropeanTimezone(
+//       request.issueDateTime
 //     );
 //     const { privateKey, certificate } = req;
 

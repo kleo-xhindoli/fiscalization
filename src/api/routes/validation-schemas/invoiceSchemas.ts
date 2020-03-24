@@ -74,7 +74,7 @@ export const createInvoicePayloadSchema = {
     .required(),
   isSimplifiedInv: joi.boolean().default(false),
   typeOfSelfIss: joi.string().valid(SELF_ISS_TYPES),
-  dateTimeCreated: joi
+  issueDateTime: joi
     .date()
     .iso()
     .required(),

@@ -3,12 +3,13 @@ import {
   FiscRequestHeaderSubsequent,
 } from './fiscalization';
 import { CurrencyCode } from './currency-codes';
+import { CountryCode } from './country-codes';
 
 // ====================================================
 // Constant values & helper types
 // ====================================================
 export const INVOICE_TYPE_CASH = 'CASH';
-export const INVOICE_TYPE_NON_CASH = 'NON-CASH';
+export const INVOICE_TYPE_NON_CASH = 'NONCASH';
 export const INVOICE_TYPES = [INVOICE_TYPE_CASH, INVOICE_TYPE_NON_CASH];
 export type InvoiceType =
   | typeof INVOICE_TYPE_CASH
@@ -75,7 +76,7 @@ export interface RegisterInvoiceRequest {
   isSimplifiedInv: boolean; // Is invoice simplified
   // selfIssuing: boolean;
   typeOfSelfIss?: SelfIssType;
-  dateTimeCreated: string; // ISO String
+  issueDateTime: string; // ISO String
   invOrdNum: number; // ordinal number of invoice
   tcrCode?: string; // tcrCode, required only for Cash invoice types
   isIssuerInVAT: boolean; // if taxpayer is in VAT (not in VAT example: foreign company)
@@ -120,7 +121,7 @@ export interface RegisterInvoiceRequest {
     name: string;
     address?: string;
     town?: string;
-    country?: string;
+    country?: CountryCode;
   };
   buyer?: {
     // all buyer info is required if the invoice
@@ -131,7 +132,7 @@ export interface RegisterInvoiceRequest {
     name?: string;
     address?: string;
     town?: string;
-    country?: string;
+    country?: CountryCode;
   };
 
   payMethods: PaymentMethod[];
@@ -155,7 +156,7 @@ export interface FiscRegisterInvoiceRequest {
   body: FiscRegisterInvoiceRequestBody;
 }
 
-interface FiscRegisterInvoiceRequestBody extends RegisterInvoiceRequest {
+export interface FiscRegisterInvoiceRequestBody extends RegisterInvoiceRequest {
   invNum: string; // `${invOrdNum}/${year}/${tcrNumber?}`
   totPriceWoVAT: number; // total price without any taxes
   totVATAmt: number; // total VAT in money
@@ -163,7 +164,7 @@ interface FiscRegisterInvoiceRequestBody extends RegisterInvoiceRequest {
   softCode: string;
   iic: string;
   iicSignature: string;
-  sameTaxes?: SameTaxGroup[];
+  sameTaxes: SameTaxGroup[];
   items: FiscInvoiceItem[];
   consTaxes?: FiscConsumptionTaxGroup[];
 }
@@ -245,7 +246,7 @@ export interface ConsumptionTaxGroup {
   priceBefConsTax: number; // price before consumer tax
 }
 
-interface FiscConsumptionTaxGroup extends ConsumptionTaxGroup {
+export interface FiscConsumptionTaxGroup extends ConsumptionTaxGroup {
   consTaxAmount: number; // consumer tax amount
 }
 

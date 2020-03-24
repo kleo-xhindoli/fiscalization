@@ -34,7 +34,7 @@ export function convertAndLogError(
         ...fault,
         request,
         rawRequest: client.lastRequest,
-        rawResponse: client.lastResponse,
+        // rawResponse: client.lastResponse,
       };
       logger.error(
         '[ERROR | SERVICE | FISCALIZATION]: Client Fiscalization Error',
@@ -47,7 +47,7 @@ export function convertAndLogError(
         ...fault,
         request,
         rawRequest: client.lastRequest,
-        rawResponse: client.lastResponse,
+        // rawResponse: client.lastResponse,
       };
       logger.error(
         '[ERROR | SERVICE | FISCALIZATION]: Server Fiscalization Error',

@@ -7,4 +7,8 @@ export default {
     methodName: 'registerCashDeposit',
     rootXmlElement: 'RegisterCashDepositRequest',
   },
+  registerInvoiceRequest: {
+    methodName: 'registerInvoice',
+    rootXmlElement: 'RegisterInvoiceRequest',
+  },
 };

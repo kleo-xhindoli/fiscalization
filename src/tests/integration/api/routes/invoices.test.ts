@@ -1,5 +1,9 @@
 import request from 'supertest';
-import app, { initializeServer } from '../../setup-tests';
+import app, {
+  initializeServer,
+  initializeMockSOAP,
+  initializeSOAP,
+} from '../../setup-tests';
 import { Server } from 'http';
 import { privateKey, certificate } from '../../../__test-data__/keys';
 import { addDays, subDays } from 'date-fns';
@@ -8,7 +12,7 @@ const payload = {
   isBadDebt: 'false',
   businUnitCode: 'bg517kw842',
   tcrCode: 'vb721zy972',
-  dateTimeCreated: '2020-03-19T12:23:09.658Z',
+  issueDateTime: '2020-03-19T12:23:09.658Z',
   invOrdNum: 1,
   isSubseqDeliv: false,
   isIssuerInVAT: true,
@@ -22,9 +26,9 @@ const payload = {
   typeOfInv: 'CASH',
   seller: {
     address: 'Rruga i ri 1',
-    country: 'Albania',
+    country: 'ALB',
     idType: 'NUIS',
-    idNum: 'L91806031N',
+    idNum: 'L41323036D',
     name: 'Coca-Cola LTD',
     town: 'Tirana',
   },
@@ -57,8 +61,11 @@ describe('Integration | Invoice routes', () => {
   let server: Server | null = null;
 
   beforeAll(async done => {
+    jest.setTimeout(30000);
     try {
       server = initializeServer();
+      await initializeMockSOAP();
+      // await initializeSOAP();
       done();
     } catch (e) {
       console.error('Failed to init server!');
@@ -71,6 +78,7 @@ describe('Integration | Invoice routes', () => {
     await server?.close();
     done();
   });
+
   describe('/api/invoices/register', () => {
     it('should respond with 401 if no API key is provided', async () => {
       const res = await request(app)
@@ -113,7 +121,7 @@ describe('Integration | Invoice routes', () => {
         isBadDebt: false,
         businUnitCode: 'bg517kw842',
         tcrCode: 'vb721zy972',
-        dateTimeCreated: '2020-03-19T13:23:09+01:00',
+        issueDateTime: '2020-03-19T13:23:09+01:00',
         invOrdNum: 1,
         isSubseqDeliv: false,
         isIssuerInVAT: true,
@@ -127,9 +135,9 @@ describe('Integration | Invoice routes', () => {
         typeOfInv: 'CASH',
         seller: {
           address: 'Rruga i ri 1',
-          country: 'Albania',
+          country: 'ALB',
           idType: 'NUIS',
-          idNum: 'L91806031N',
+          idNum: 'L41323036D',
           name: 'Coca-Cola LTD',
           town: 'Tirana',
         },
@@ -167,10 +175,9 @@ describe('Integration | Invoice routes', () => {
         totPriceWoVAT: 398,
         totVATAmt: 71.64,
         totPrice: 469.64,
-        softCode: 'abc123',
-        iic: 'BDD49A6928BF04AB5FCBEEB9CF5504F8',
+        iic: '6A4CB59D51EBF445202201A65144ABD5',
         iicSignature:
-          '605D54B1C9369FF16A5408A97F6F3416E94C77BF89DC8B986A59DDAD63121FC8551E8C2A5D823A12DFA254415CAAED4C91D9D0E15D911FB744B2BE2746797A5BCECA1A919FF1A4CE4ECFE85061EAB2D9B1E43BA5E93046711845F4A136BCAC2E075770DA5C8B02013EACEE5B5416E18BC423526E4ECB636652B2BF144D32B7C35D14A3DF41E8638EFE5B53D577314661D8C1711E9D782F79ED1DA83F462551550CA5EACE77888CCE08D98612B424B343E3969C7C95D7E4E27C07F598A54F05B7F8BD8F81C1870A45A8709AE2A5D5A84D0D17C92C9C934507E710164B4BB5AC228A87627610950FDEE0E7BCD134A32EC1948A7DAB2457435D53DF25CD22B1180E',
+          '3F32B4E240AF5B83F0443DBB18D7DA28DB62091CB177A9417621E0F1458E0E260B5717BA8021E6F14F6EA6F4074F3A67B4E603AE40CEC00750A88FF29B45043B3FC5D44391DB80980E1DD36E45528AE9A2E9C9B4408F6313FEDC9C68B3B3BA79299E0030CF7D8F20D9E06CC23F7EEC1FBB4547E364762D19F9206B8B12A3E8033C8A3F5D4E33186A9381E42786FF7CE9ECFBE5577364D87A3D1444AB2DAA35CBEEB5DFB60F0C6168646D389F9C23F8BD72ACEBD1CD4A060AE00E6F5DD6E8B86767E5AB682DD20995052C4C3A1715E4D7E466C481613D3AC82D8208DF50C4E69ABB304ED0130AB334A91223A665CE555210F24083BA1D81F3ED25C9A32D08C000',
         sameTaxes: [
           {
             VATRate: 16,
@@ -196,8 +203,8 @@ describe('Integration | Invoice routes', () => {
         .send({
           payload: {
             ...payload,
-            typeOfInv: 'NON-CASH',
-            cashRegister: undefined,
+            typeOfInv: 'NONCASH',
+            tcrCode: undefined,
           },
           certificates: {
             privateKey,
@@ -254,7 +261,7 @@ describe('Integration | Invoice routes', () => {
         .send({
           payload: {
             ...payload,
-            dateTimeCreated: undefined,
+            issueDateTime: undefined,
           },
           certificates: {
             privateKey,
@@ -357,7 +364,7 @@ describe('Integration | Invoice routes', () => {
       expect(res.status).toBe(400);
     });
 
-    it(`should respond with 400 if dateTimeCreated is not
+    it(`should respond with 400 if issueDateTime is not
       a valid iso string`, async () => {
       const res = await request(app)
         .post('/api/invoices/register')
@@ -365,7 +372,7 @@ describe('Integration | Invoice routes', () => {
         .send({
           payload: {
             ...payload,
-            dateTimeCreated: new Date().toUTCString(),
+            issueDateTime: new Date().toUTCString(),
           },
           certificates: {
             privateKey,

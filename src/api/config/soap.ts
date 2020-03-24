@@ -3,7 +3,6 @@ import config from '../../config';
 import logger from './logger';
 import request from 'request';
 
-
 const waitForSecondsAsync = (sec: number) => {
   return new Promise(resolve => {
     setTimeout(resolve, sec * 1000);
@@ -36,6 +35,10 @@ const clientConfig = {
         value: '2',
       },
     ],
+  },
+  ignoredNamespaces: {
+    namespaces: ['al', 'als', 'ns1'],
+    override: true,
   },
   request: requestWithDefaults,
 };

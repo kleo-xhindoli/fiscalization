@@ -12,6 +12,7 @@ import {
   ID_TYPE_NUIS,
 } from '../../../types';
 import { exampleKey, privateKey, certificate } from '../../__test-data__/keys';
+import { sendRegisterInvoiceRequest } from '../../../services/fiscalization';
 
 describe('Unit | Service | Invoice', () => {
   const request: RegisterInvoiceRequest = {
@@ -19,7 +20,7 @@ describe('Unit | Service | Invoice', () => {
     isSimplifiedInv: false,
     businUnitCode: 'bg517kw842',
     tcrCode: 'xb131ap287',
-    dateTimeCreated: '2019-09-26T13:50:13+02:00',
+    issueDateTime: '2019-09-26T13:50:13+02:00',
     invOrdNum: 6,
     isSubseqDeliv: false,
     isIssuerInVAT: true,
@@ -63,6 +64,26 @@ describe('Unit | Service | Invoice', () => {
       },
     ],
   };
+
+  beforeEach(() => {
+    jest.clearAllMocks();
+
+    // @ts-ignore
+    sendRegisterInvoiceRequest = jest.fn(async req => {
+      const FIC = '99999999-9999-9999-9999-999999999999';
+      return {
+        header: {
+          requestUUID: req.header.UUID,
+          sendDateTime: req.header.sendDateTime,
+          UUID: '44444444-4444-4444-4444-444444444444',
+        },
+        body: {
+          ...req.body,
+          FIC,
+        },
+      };
+    });
+  });
   describe('registerInvoice', () => {
     it('should resolve with the correct RegisterInvoiceResponse', async () => {
       const response = await registerInvoice(request, privateKey, certificate);
@@ -72,7 +93,7 @@ describe('Unit | Service | Invoice', () => {
         isBadDebt: false,
         businUnitCode: 'bg517kw842',
         tcrCode: 'xb131ap287',
-        dateTimeCreated: '2019-09-26T13:50:13+02:00',
+        issueDateTime: '2019-09-26T13:50:13+02:00',
         invOrdNum: 6,
         isSubseqDeliv: false,
         isIssuerInVAT: true,
@@ -127,7 +148,6 @@ describe('Unit | Service | Invoice', () => {
         totPriceWoVAT: 398,
         totVATAmt: 71.64,
         totPrice: 469.64,
-        softCode: 'abc123',
         sameTaxes: [
           {
             VATRate: 16,
@@ -144,9 +164,9 @@ describe('Unit | Service | Invoice', () => {
         ],
       });
 
-      expect(response.body.iic).toBe('8A895FD61406F2EEDE79BDC8BFF11B96');
+      expect(response.body.iic).toBe('2E3AC0E0266204C0F8E71304CC3652AF');
       expect(response.body.iicSignature).toBe(
-        '455791F7752C10EC6A410DBE5BD3FC52F27AA63526A296BA142EEE1F9001CD9A2BFBD49A268126ADD975A1E89F5D945DC7870CA78BB38C1CFA2E7D5BC2C95B119A74E738962308763B962A6F884107242D5A8B397D00AB158ECAB0AAAC7CC0FC3A444E5A1AFA7A6F35CF77D7019BA2A1ED7E7CAF9C2F981A0BBF659A957ECCCD5B3218097AA00FB26F515F8AC73583F0430EF30A0D0C43D4F3BFC0214F09CC899CAC034DA07A393EBD12E0168BE5F336B2DE806F22F94122EE36FD406EBA85563BFF1727DAC9CFBD5EB10BDB5793233C278057DE0BA9A13288888C3D0E6D7258643BBDF4689E5B161CEA6D4255E5F7F7C7465E0BB2B42B6F818DCB32F1AE5A1F'
+        '381D560CB6D5F8B4421380FCB39C07C13C25BED279A8E9BC212C9ED0F7FA6E9B09076DA4F980375382BBE68EE240BCC20F87DFDE6AD1DDFD9BCD5DF6E91527DC06C1A1A46CC1849EF134ADDE607A87EA55ED0957046BC6A3DA0DE49DD101166E7845B18AFAFB01872B1475E09AB2316AFF4BC74C30F3C31604133FE662596812D4F48864B6EA761733DA8389CB0F33F7C51DB8CFB9B6F9CCEE3D3426A5ECAEFC2C2852415DC5FE65979A552CFA5CEF69FE62955EC2CA57137559FEDD640876C9E0D1CF5A565EB7E4C88DA4DFFABB0388A4DCA5D8502BEE1B06B73C5B407BEC8F2CC857B07C32F45C8CF66E26DEAD317365FFF1F44BC89D26473415B0E49A94BA'
       );
     });
 
@@ -162,6 +182,7 @@ describe('Unit | Service | Invoice', () => {
     it('should return the formatted invNum when request type is NonCash', () => {
       const invNum = getInvNum({
         ...request,
+        tcrCode: undefined,
         typeOfInv: INVOICE_TYPE_NON_CASH,
       });
       expect(invNum).toBe('6/2020');
