@@ -4,6 +4,11 @@ import {
   FiscRequestHeaderSubsequent,
 } from './fiscalization';
 
+export const TCR_TYPE_REGULAR = 'REGULAR';
+export const TCR_TYPE_VENDING = 'VENDING';
+export const TCR_TYPES = [TCR_TYPE_REGULAR, TCR_TYPE_VENDING];
+export type TCRType = typeof TCR_TYPE_REGULAR | typeof TCR_TYPE_VENDING;
+
 export interface FiscRegisterTCRRequest {
   header: FiscRequestHeader;
   body: {
@@ -14,6 +19,7 @@ export interface FiscRegisterTCRRequest {
     tcrIntID: number; // ordinal number for TCR starting at 1
     validFrom?: string | null;
     validTo?: string | null;
+    type: TCRType;
   };
 }
 
@@ -23,6 +29,7 @@ export interface RegisterTCRRequest {
   tcrIntID: number; // ordinal number for TCR starting at 1
   validFrom?: string | null; // ISO
   validTo?: string | null; // ISO
+  type: TCRType;
 }
 
 export interface FiscRegisterTCRResponse {
@@ -39,10 +46,9 @@ export interface RegisterTCRResponse {
     businUnitCode: string; // unique business unit code
     issuerNUIS: string;
     tcrIntID: number; // ordinal number for TCR starting at 1
-    // maintainerCode: string;
-    // softCode: string;
     validFrom?: string | null;
     validTo?: string | null;
+    type: TCRType;
   };
 }
 

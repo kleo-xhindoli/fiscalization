@@ -11,7 +11,14 @@ export async function handleRegisterTCR(
   next: NextFn
 ) {
   try {
-    let { businUnitCode, issuerNUIS, tcrIntID, validFrom, validTo } = req.body;
+    let {
+      businUnitCode,
+      issuerNUIS,
+      tcrIntID,
+      validFrom,
+      validTo,
+      type,
+    } = req.validatedBody;
     const { privateKey, certificate } = req;
 
     let validFromLocalized: string | null = null;
@@ -22,18 +29,18 @@ export async function handleRegisterTCR(
       validFromLocalized = toCentralEuropeanTimezone(validFrom);
 
       // Validate validFrom not in the past
-      const difference = differenceInCalendarDays(parseISO(validFrom), now);
+      const difference = differenceInCalendarDays(parseISO(validFromLocalized), now);
       if (difference < 0)
         return next(badRequest('validFrom cannot be in the past'));
     }
 
     if (validTo) {
       validToLocalized = toCentralEuropeanTimezone(validTo);
-      if (validFrom) {
+      if (validFrom && validFromLocalized) {
         // Validate validTo not before validFrom
         const difference = differenceInCalendarDays(
-          parseISO(validTo),
-          parseISO(validFrom)
+          parseISO(validToLocalized),
+          parseISO(validFromLocalized)
         );
         if (difference < 0) {
           return next(badRequest('validTo cannot be before validFrom'));
@@ -48,6 +55,7 @@ export async function handleRegisterTCR(
         tcrIntID,
         validFrom: validFromLocalized?.split('T')[0],
         validTo: validToLocalized?.split('T')[0],
+        type,
       },
       privateKey,
       certificate

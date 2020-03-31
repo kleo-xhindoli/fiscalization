@@ -23,6 +23,7 @@ function transformRegisterTCRRequest(
         MaintainerCode: request.body.maintainerCode,
         SoftCode: request.body.softCode,
         TCRIntID: request.body.tcrIntID,
+        Type: request.body.type,
       },
     },
   };
