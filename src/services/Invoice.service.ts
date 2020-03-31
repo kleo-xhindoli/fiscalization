@@ -4,7 +4,7 @@ import {
   FiscRegisterInvoiceRequest,
   FiscInvoiceItem,
   InvoiceItem,
-  INVOICE_TYPE_CASH,
+  RegisterRawInvoiceRequest,
 } from '../types';
 import {
   calculateItemPriceBeforeVAT,
@@ -18,7 +18,6 @@ import {
 } from '../utils/vat-utls';
 import { generateSubsequentFiscHeaders } from '../utils/fiscHeaders';
 import config from '../config';
-import uuidv4 from 'uuid/v4';
 import NodeRSA from 'node-rsa';
 import crypto from 'crypto';
 import { sendRegisterInvoiceRequest } from './fiscalization';
@@ -40,6 +39,38 @@ export async function registerInvoice(
     header: res.header,
     body: {
       ...fiscInvoiceRequest.body,
+      ...res.body,
+    },
+  };
+}
+
+export async function registerRawInvoice(
+  invoiceRequest: RegisterRawInvoiceRequest,
+  privateKey: string,
+  certificate: string
+): Promise<RegisterInvoiceResponse> {
+  const requestHeader = generateSubsequentFiscHeaders(
+    invoiceRequest.isSubseqDeliv
+  );
+
+  const fiscRequest: FiscRegisterInvoiceRequest = {
+    header: requestHeader,
+    body: {
+      ...invoiceRequest,
+      softCode: config.fiscSoftwareCode,
+    },
+  };
+
+  const res = await sendRegisterInvoiceRequest(
+    fiscRequest,
+    privateKey,
+    certificate
+  );
+
+  return {
+    header: res.header,
+    body: {
+      ...invoiceRequest,
       ...res.body,
     },
   };

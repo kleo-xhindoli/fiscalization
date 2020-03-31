@@ -1,6 +1,13 @@
 import { Request, Response } from 'express';
-import { NextFn, RegisterInvoiceRequest } from '../../types';
-import { registerInvoice } from '../../services/Invoice.service';
+import {
+  NextFn,
+  RegisterInvoiceRequest,
+  RegisterRawInvoiceRequest,
+} from '../../types';
+import {
+  registerInvoice,
+  registerRawInvoice,
+} from '../../services/Invoice.service';
 import { toCentralEuropeanTimezone } from '../../utils/date-utils';
 
 export async function handleRegisterInvoice(
@@ -31,6 +38,23 @@ export async function handleRegisterInvoice(
 
     const response = await registerInvoice(request, privateKey, certificate);
 
+    res.json(response);
+  } catch (e) {
+    next(e);
+  }
+}
+
+export async function handleRawInvoice(
+  req: Request,
+  res: Response,
+  next: NextFn
+) {
+  const request: RegisterRawInvoiceRequest = req.validatedBody;
+
+  const { privateKey, certificate } = req;
+
+  try {
+    const response = await registerRawInvoice(request, privateKey, certificate);
     res.json(response);
   } catch (e) {
     next(e);
