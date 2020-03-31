@@ -169,6 +169,11 @@ export interface FiscRegisterInvoiceRequestBody extends RegisterInvoiceRequest {
   consTaxes?: FiscConsumptionTaxGroup[];
 }
 
+export type RegisterRawInvoiceRequest = Omit<
+  FiscRegisterInvoiceRequestBody,
+  'softCode'
+>;
+
 // ====================================================
 // Response Types
 // ====================================================
@@ -183,7 +188,8 @@ export interface FiscRegisterInvoiceResponse {
 }
 export interface RegisterInvoiceResponse {
   header: FiscResponseHeader;
-  body: FiscRegisterInvoiceRequestBody & FiscRegisterInvoiceResponseBody;
+  body: Omit<FiscRegisterInvoiceRequestBody, 'softCode'> &
+    FiscRegisterInvoiceResponseBody;
 }
 
 // ====================================================

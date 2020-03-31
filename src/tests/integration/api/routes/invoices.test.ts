@@ -1067,4 +1067,178 @@ describe('Integration | Invoice routes', () => {
       expect(res.status).toBe(400);
     });
   });
+
+  const rawPayload = {
+    ...payload,
+    invNum: '1/2020/vb721zy972',
+    totPriceWoVAT: 398,
+    totVATAmt: 71.64,
+    totPrice: 469.64,
+    iic: '6A4CB59D51EBF445202201A65144ABD5',
+    iicSignature:
+      '3F32B4E240AF5B83F0443DBB18D7DA28DB62091CB177A9417621E0F1458E0E260B5717BA8021E6F14F6EA6F4074F3A67B4E603AE40CEC00750A88FF29B45043B3FC5D44391DB80980E1DD36E45528AE9A2E9C9B4408F6313FEDC9C68B3B3BA79299E0030CF7D8F20D9E06CC23F7EEC1FBB4547E364762D19F9206B8B12A3E8033C8A3F5D4E33186A9381E42786FF7CE9ECFBE5577364D87A3D1444AB2DAA35CBEEB5DFB60F0C6168646D389F9C23F8BD72ACEBD1CD4A060AE00E6F5DD6E8B86767E5AB682DD20995052C4C3A1715E4D7E466C481613D3AC82D8208DF50C4E69ABB304ED0130AB334A91223A665CE555210F24083BA1D81F3ED25C9A32D08C000',
+    sameTaxes: [
+      {
+        VATRate: 16,
+        numOfItems: 1,
+        priceBeforeVAT: 199,
+        VATAmt: 31.84,
+      },
+      {
+        VATRate: 20,
+        numOfItems: 1,
+        priceBeforeVAT: 199,
+        VATAmt: 39.8,
+      },
+    ],
+    items: [
+      {
+        code: '501234567890',
+        name: 'Fanta',
+        quantity: 1,
+        rebate: 0,
+        rebateReducingBasePrice: true,
+        unitOfMeasure: 'piece',
+        unitPrice: 199,
+        unitPriceWithVAT: 238.8,
+        VATRate: 20,
+        priceBeforeVAT: 199,
+        VATAmount: 39.8,
+        priceAfterVAT: 238.8,
+      },
+      {
+        code: '501234567890',
+        name: 'Fanta',
+        quantity: 1,
+        rebate: 0,
+        rebateReducingBasePrice: true,
+        unitOfMeasure: 'piece',
+        unitPriceWithVAT: 230.84,
+        unitPrice: 199,
+        VATRate: 16,
+        priceBeforeVAT: 199,
+        VATAmount: 31.84,
+        priceAfterVAT: 230.84,
+      },
+    ],
+  };
+
+  describe('/api/invoices/registerRaw', () => {
+    it('should respond with 401 if no API key is provided', async () => {
+      const res = await request(app)
+        .post('/api/invoices/registerRaw')
+        .send({
+          ...rawPayload,
+        });
+      expect(res.status).toBe(401);
+    });
+
+    it('should respond with 403 if no certificates are provided', async () => {
+      const res = await request(app)
+        .post('/api/invoices/registerRaw')
+        .set({ 'X-Api-Key': MAGNUM_API_KEY })
+        .send({
+          ...rawPayload,
+        });
+      expect(res.status).toBe(403);
+    });
+
+    it('should register an raw invoice if valid data is provided', async () => {
+      const res = await request(app)
+        .post('/api/invoices/registerRaw')
+        .set({ 'X-Api-Key': MAGNUM_API_KEY })
+        .send({
+          payload: {
+            ...rawPayload,
+          },
+          certificates: {
+            privateKey,
+            certificate,
+          },
+        });
+      expect(res.status).toBe(200);
+      // header
+      expect(res.body.header.sendDateTime).toBeDefined();
+      expect(res.body.header.UUID).toBeDefined();
+      expect(res.body.header.requestUUID).toBeDefined();
+      // body
+      expect(res.body.body.FIC).toBeDefined();
+      expect(res.body.body).toMatchObject({
+        isBadDebt: false,
+        businUnitCode: 'bg517kw842',
+        tcrCode: 'vb721zy972',
+        issueDateTime: '2020-03-19T12:23:09.658Z',
+        invOrdNum: 1,
+        isSubseqDeliv: false,
+        isIssuerInVAT: true,
+        operatorCode: 'ax083bc420',
+        payMethods: [
+          {
+            type: 'BANKNOTE',
+          },
+        ],
+        isReverseCharge: false,
+        typeOfInv: 'CASH',
+        seller: {
+          address: 'Rruga i ri 1',
+          country: 'ALB',
+          idType: 'NUIS',
+          idNum: 'L41323036D',
+          name: 'Coca-Cola LTD',
+          town: 'Tirana',
+        },
+        items: [
+          {
+            code: '501234567890',
+            name: 'Fanta',
+            quantity: 1,
+            rebate: 0,
+            rebateReducingBasePrice: true,
+            unitOfMeasure: 'piece',
+            unitPrice: 199,
+            unitPriceWithVAT: 238.8,
+            VATRate: 20,
+            priceBeforeVAT: 199,
+            VATAmount: 39.8,
+            priceAfterVAT: 238.8,
+          },
+          {
+            code: '501234567890',
+            name: 'Fanta',
+            quantity: 1,
+            rebate: 0,
+            rebateReducingBasePrice: true,
+            unitOfMeasure: 'piece',
+            unitPriceWithVAT: 230.84,
+            unitPrice: 199,
+            VATRate: 16,
+            priceBeforeVAT: 199,
+            VATAmount: 31.84,
+            priceAfterVAT: 230.84,
+          },
+        ],
+        invNum: '1/2020/vb721zy972',
+        totPriceWoVAT: 398,
+        totVATAmt: 71.64,
+        totPrice: 469.64,
+        iic: '6A4CB59D51EBF445202201A65144ABD5',
+        iicSignature:
+          '3F32B4E240AF5B83F0443DBB18D7DA28DB62091CB177A9417621E0F1458E0E260B5717BA8021E6F14F6EA6F4074F3A67B4E603AE40CEC00750A88FF29B45043B3FC5D44391DB80980E1DD36E45528AE9A2E9C9B4408F6313FEDC9C68B3B3BA79299E0030CF7D8F20D9E06CC23F7EEC1FBB4547E364762D19F9206B8B12A3E8033C8A3F5D4E33186A9381E42786FF7CE9ECFBE5577364D87A3D1444AB2DAA35CBEEB5DFB60F0C6168646D389F9C23F8BD72ACEBD1CD4A060AE00E6F5DD6E8B86767E5AB682DD20995052C4C3A1715E4D7E466C481613D3AC82D8208DF50C4E69ABB304ED0130AB334A91223A665CE555210F24083BA1D81F3ED25C9A32D08C000',
+        sameTaxes: [
+          {
+            VATRate: 16,
+            numOfItems: 1,
+            priceBeforeVAT: 199,
+            VATAmt: 31.84,
+          },
+          {
+            VATRate: 20,
+            numOfItems: 1,
+            priceBeforeVAT: 199,
+            VATAmt: 39.8,
+          },
+        ],
+      });
+    });
+  });
 });

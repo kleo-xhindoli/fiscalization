@@ -183,3 +183,42 @@ export const createInvoicePayloadSchema = {
   fees: joi.array().items(feeSchema),
   sumIICRefs: joi.array().items(summaryIICRefSchema),
 };
+
+const sameTaxGroupSchema = joi.object({
+  VATRate: joi.number().required(),
+  numOfItems: joi.number().required(),
+  priceBeforeVAT: joi.number().required(),
+  VATAmt: joi.number().required(),
+  exemptFromVAT: joi.string().valid(EXEMPT_FROM_VAT_TYPES),
+});
+
+const rawInvoiceItemSchema = invoiceItemSchema.keys({
+  unitPriceWithVAT: joi.number().required(),
+  priceBeforeVAT: joi.number().required(),
+  VATAmount: joi.number().required(),
+  priceAfterVAT: joi.number().required(),
+});
+
+const rawConsumptionTaxItemsSchema = consumptionTaxItemsSchema.keys({
+  consTaxAmount: joi.number().required(),
+});
+
+export const createRawInvoicePayloadSchema = {
+  ...createInvoicePayloadSchema,
+
+  invNum: joi.string().required(),
+  totPriceWoVAT: joi.number().required(),
+  totVATAmt: joi.number().required(),
+  totPrice: joi.number().required(),
+  iic: joi.string().required(),
+  iicSignature: joi.string().required(),
+  sameTaxes: joi
+    .array()
+    .items(sameTaxGroupSchema)
+    .default([]),
+  items: joi
+    .array()
+    .items(rawInvoiceItemSchema)
+    .default([]),
+  constTaxes: joi.array().items(rawConsumptionTaxItemsSchema),
+};
