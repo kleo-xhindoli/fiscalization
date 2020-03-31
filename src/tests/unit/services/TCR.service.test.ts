@@ -4,6 +4,7 @@ import {
   sendRegisterTCRRequest,
   sendTCRCashBalanceRequest,
 } from '../../../services/fiscalization';
+import { TCR_TYPE_REGULAR } from '../../../types';
 
 describe('Unit | Service | TCR', () => {
   const privateKey = 'Test Key';
@@ -51,6 +52,7 @@ describe('Unit | Service | TCR', () => {
           businUnitCode: 'bb123bb123',
           issuerNUIS: 'I12345678I',
           tcrIntID: 1,
+          type: TCR_TYPE_REGULAR,
         },
         privateKey,
         certificate
@@ -77,6 +79,7 @@ describe('Unit | Service | TCR', () => {
           tcrIntID: 1,
           validFrom,
           validTo,
+          type: TCR_TYPE_REGULAR,
         },
         privateKey,
         certificate

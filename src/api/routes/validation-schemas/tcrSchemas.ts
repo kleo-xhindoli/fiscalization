@@ -1,4 +1,5 @@
 import joi from 'joi';
+import { TCR_TYPES, TCR_TYPE_REGULAR } from '../../../types';
 
 export const registerTCRPayloadSchema = {
   businUnitCode: joi.string().required(),
@@ -9,6 +10,10 @@ export const registerTCRPayloadSchema = {
     .required(),
   validFrom: joi.date().iso(),
   validTo: joi.date().iso(),
+  type: joi
+    .string()
+    .valid(TCR_TYPES)
+    .default(TCR_TYPE_REGULAR),
 };
 
 export const cashBalancePayloadSchema = {

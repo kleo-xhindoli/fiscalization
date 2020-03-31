@@ -18,6 +18,7 @@ import {
   CashBalanceOperation,
   FiscRegisterInvoiceRequest,
   FiscRegisterInvoiceRequestBody,
+  TCRType,
 } from '../../../../types';
 import { subHours } from 'date-fns';
 
@@ -130,6 +131,7 @@ describe('Integration | Service | Fiscalization', () => {
           maintainerCode: 'pa979rk772',
           softCode: 'rm039uu671',
           tcrIntID: 1,
+          type: 'REGULAR' as TCRType,
         },
       };
       const res = await sendRegisterTCRRequest(req, key, cert);
