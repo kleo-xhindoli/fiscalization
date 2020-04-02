@@ -21,6 +21,7 @@ import config from '../config';
 import NodeRSA from 'node-rsa';
 import crypto from 'crypto';
 import { sendRegisterInvoiceRequest } from './fiscalization';
+import { FiscalizationError } from '../utils/errors';
 
 export async function registerInvoice(
   invoiceRequest: RegisterInvoiceRequest,
@@ -29,22 +30,34 @@ export async function registerInvoice(
 ): Promise<RegisterInvoiceResponse> {
   const fiscInvoiceRequest = getFiscInvoiceRequest(invoiceRequest, privateKey);
 
-  const res = await sendRegisterInvoiceRequest(
-    fiscInvoiceRequest,
-    privateKey,
-    certificate
-  );
+  try {
+    const res = await sendRegisterInvoiceRequest(
+      fiscInvoiceRequest,
+      privateKey,
+      certificate
+    );
 
-  // Ensure that softCode is not leaked in the response
-  delete fiscInvoiceRequest.body.softCode;
+    // Ensure that softCode is not leaked in the response
+    delete fiscInvoiceRequest.body.softCode;
 
-  return {
-    header: res.header,
-    body: {
-      ...fiscInvoiceRequest.body,
-      ...res.body,
-    },
-  };
+    return {
+      header: res.header,
+      body: {
+        ...fiscInvoiceRequest.body,
+        ...res.body,
+      },
+    };
+  } catch (e) {
+    if (e instanceof FiscalizationError) {
+      e.error.detail.request = {
+        ...fiscInvoiceRequest.body,
+        softCode: undefined,
+      };
+      throw e;
+    } else {
+      throw e;
+    }
+  }
 }
 
 export async function registerRawInvoice(
