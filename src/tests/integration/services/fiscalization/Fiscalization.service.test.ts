@@ -130,7 +130,7 @@ describe('Integration | Service | Fiscalization', () => {
           issuerNUIS: 'L41323036D',
           maintainerCode: 'pa979rk772',
           softCode: 'rm039uu671',
-          tcrIntID: 1,
+          tcrIntID: '1',
           type: 'REGULAR' as TCRType,
         },
       };

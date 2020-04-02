@@ -3,10 +3,14 @@ import { TCR_TYPES, TCR_TYPE_REGULAR } from '../../../types';
 
 export const registerTCRPayloadSchema = {
   businUnitCode: joi.string().required(),
-  issuerNUIS: joi.string().required(), // TODO: NUIS regex
+  issuerNUIS: joi
+    .string()
+    .regex(/[a-zA-Z]{1}[0-9]{8}[a-zA-Z]{1}/)
+    .required(),
   tcrIntID: joi
-    .number()
+    .string()
     .min(1)
+    .max(50)
     .required(),
   validFrom: joi.date().iso(),
   validTo: joi.date().iso(),
@@ -31,7 +35,10 @@ export const cashBalancePayloadSchema = {
       .min(0)
       .required(),
   }),
-  issuerNUIS: joi.string().required(), // TODO: NUIS regex
+  issuerNUIS: joi
+    .string()
+    .regex(/[a-zA-Z]{1}[0-9]{8}[a-zA-Z]{1}/)
+    .required(),
   operation: joi
     .string()
     .valid(['INITIAL', 'INOUT'])

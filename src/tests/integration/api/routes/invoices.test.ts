@@ -193,6 +193,8 @@ describe('Integration | Invoice routes', () => {
           },
         ],
       });
+
+      expect(res.body.body.softCode).toBeUndefined();
     });
 
     it(`should respond with 200 when creating a non-cash invoice
@@ -1239,6 +1241,8 @@ describe('Integration | Invoice routes', () => {
           },
         ],
       });
+
+      expect(res.body.body.softCode).toBeUndefined();
     });
   });
 });

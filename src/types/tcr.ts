@@ -16,7 +16,7 @@ export interface FiscRegisterTCRRequest {
     issuerNUIS: string;
     maintainerCode: string;
     softCode: string;
-    tcrIntID: number; // ordinal number for TCR starting at 1
+    tcrIntID: string; // internal identification of the TCR
     validFrom?: string | null;
     validTo?: string | null;
     type: TCRType;
@@ -26,7 +26,7 @@ export interface FiscRegisterTCRRequest {
 export interface RegisterTCRRequest {
   businUnitCode: string; // unique business unit code
   issuerNUIS: string;
-  tcrIntID: number; // ordinal number for TCR starting at 1
+  tcrIntID: string; // internal identification of the TCR
   validFrom?: string | null; // ISO
   validTo?: string | null; // ISO
   type: TCRType;
@@ -45,7 +45,7 @@ export interface RegisterTCRResponse {
     tcrCode: string; // unique identifier for the registered TCR
     businUnitCode: string; // unique business unit code
     issuerNUIS: string;
-    tcrIntID: number; // ordinal number for TCR starting at 1
+    tcrIntID: string; // internal identification of the TCR
     validFrom?: string | null;
     validTo?: string | null;
     type: TCRType;

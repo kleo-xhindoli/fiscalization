@@ -24,7 +24,6 @@ describe('Unit | Service | TCR', () => {
             UUID: '44444444-4444-4444-4444-444444444444',
           },
           body: {
-            ...req.body,
             tcrCode,
           },
         };
@@ -39,7 +38,6 @@ describe('Unit | Service | TCR', () => {
             UUID: '44444444-4444-4444-4444-444444444444',
           },
           body: {
-            ...req.body,
             FCDC: '44444444-4444-4444-4444-444444444444',
           },
         };
@@ -51,7 +49,7 @@ describe('Unit | Service | TCR', () => {
         {
           businUnitCode: 'bb123bb123',
           issuerNUIS: 'I12345678I',
-          tcrIntID: 1,
+          tcrIntID: '1',
           type: TCR_TYPE_REGULAR,
         },
         privateKey,
@@ -65,7 +63,10 @@ describe('Unit | Service | TCR', () => {
       expect(res.body.tcrCode).toBeDefined();
       expect(res.body.businUnitCode).toBe('bb123bb123');
       expect(res.body.issuerNUIS).toBe('I12345678I');
-      expect(res.body.tcrIntID).toBe(1);
+      expect(res.body.tcrIntID).toBe('1');
+
+      // @ts-ignore
+      expect(res.body.softCode).toBeUndefined();
     });
 
     it('registers a new TCR when validTo and validFrom fields are present', async () => {
@@ -76,7 +77,7 @@ describe('Unit | Service | TCR', () => {
         {
           businUnitCode: 'bb123bb123',
           issuerNUIS: 'I12345678I',
-          tcrIntID: 1,
+          tcrIntID: '1',
           validFrom,
           validTo,
           type: TCR_TYPE_REGULAR,
@@ -92,7 +93,7 @@ describe('Unit | Service | TCR', () => {
       expect(res.body.tcrCode).toBeDefined();
       expect(res.body.businUnitCode).toBe('bb123bb123');
       expect(res.body.issuerNUIS).toBe('I12345678I');
-      expect(res.body.tcrIntID).toBe(1);
+      expect(res.body.tcrIntID).toBe('1');
       expect(res.body.validFrom).toBe(validFrom);
       expect(res.body.validTo).toBe(validTo);
     });

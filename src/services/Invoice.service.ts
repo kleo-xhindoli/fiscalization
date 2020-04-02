@@ -35,6 +35,9 @@ export async function registerInvoice(
     certificate
   );
 
+  // Ensure that softCode is not leaked in the response
+  delete fiscInvoiceRequest.body.softCode;
+
   return {
     header: res.header,
     body: {

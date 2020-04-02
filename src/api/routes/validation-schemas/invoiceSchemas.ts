@@ -9,6 +9,8 @@ import {
   CORRECTIVE_INVOICE_TYPES,
   FEE_TYPES,
 } from '../../../types';
+import { ALLOWED_COUNTRY_CODES } from '../../../types/country-codes';
+import { ALLOWED_CURRENCY_CODES } from '../../../types/currency-codes';
 
 const invoiceItemSchema = joi.object({
   name: joi.string().required(),
@@ -105,7 +107,10 @@ export const createInvoicePayloadSchema = {
     .iso()
     .min('now'),
   currency: joi.object({
-    code: joi.string().required(),
+    code: joi
+      .string()
+      .required()
+      .valid(ALLOWED_CURRENCY_CODES),
     exRate: joi.number().required(),
   }),
   supplyDateOrPeriod: joi.object({
@@ -141,7 +146,7 @@ export const createInvoicePayloadSchema = {
       name: joi.string().required(),
       address: joi.string(),
       town: joi.string(),
-      country: joi.string(),
+      country: joi.string().valid(ALLOWED_COUNTRY_CODES),
     })
     .required(),
   buyer: joi.when('typeOfSelfIss', {
@@ -156,7 +161,7 @@ export const createInvoicePayloadSchema = {
         name: joi.string().required(),
         address: joi.string(),
         town: joi.string(),
-        country: joi.string(),
+        country: joi.string().valid(ALLOWED_COUNTRY_CODES),
       })
       .required(),
     otherwise: joi.object({
@@ -165,7 +170,7 @@ export const createInvoicePayloadSchema = {
       name: joi.string(),
       address: joi.string(),
       town: joi.string(),
-      country: joi.string(),
+      country: joi.string().valid(ALLOWED_COUNTRY_CODES),
     }),
   }),
 

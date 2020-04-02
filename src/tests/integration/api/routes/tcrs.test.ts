@@ -36,7 +36,7 @@ describe('Integration | TCR Routes', () => {
           payload: {
             businUnitCode: 'bb123bb123',
             issuerNUIS: 'I12345678I',
-            tcrIntID: 1,
+            tcrIntID: '1',
           },
           certificates: {
             privateKey,
@@ -55,7 +55,7 @@ describe('Integration | TCR Routes', () => {
           payload: {
             businUnitCode: 'bb123bb123',
             issuerNUIS: 'I12345678I',
-            tcrIntID: 1,
+            tcrIntID: '1',
           },
           certificates: {
             privateKey,
@@ -73,7 +73,8 @@ describe('Integration | TCR Routes', () => {
       expect(res.body.body.tcrCode).toBeDefined();
       expect(res.body.body.businUnitCode).toBe('bb123bb123');
       expect(res.body.body.issuerNUIS).toBe('I12345678I');
-      expect(res.body.body.tcrIntID).toBe(1);
+      expect(res.body.body.tcrIntID).toBe('1');
+      expect(res.body.body.softCode).toBeUndefined();
     });
 
     it(`should respond with the created TCR number on a valid POST request
@@ -89,7 +90,7 @@ describe('Integration | TCR Routes', () => {
           payload: {
             businUnitCode: 'bb123bb123',
             issuerNUIS: 'I12345678I',
-            tcrIntID: 1,
+            tcrIntID: '1',
             validFrom,
             validTo,
           },
@@ -109,7 +110,7 @@ describe('Integration | TCR Routes', () => {
       expect(res.body.body.tcrCode).toBeDefined();
       expect(res.body.body.businUnitCode).toBe('bb123bb123');
       expect(res.body.body.issuerNUIS).toBe('I12345678I');
-      expect(res.body.body.tcrIntID).toBe(1);
+      expect(res.body.body.tcrIntID).toBe('1');
       expect(res.body.body.validFrom).toBeDefined();
       expect(res.body.body.validTo).toBeDefined();
     });
@@ -126,7 +127,7 @@ describe('Integration | TCR Routes', () => {
           payload: {
             businUnitCode: 'bb123bb123',
             issuerNUIS: 'I12345678I',
-            tcrIntID: 1,
+            tcrIntID: '1',
             validFrom,
             validTo,
           },
@@ -150,7 +151,7 @@ describe('Integration | TCR Routes', () => {
           payload: {
             businUnitCode: 'bb123bb123',
             issuerNUIS: 'I12345678I',
-            tcrIntID: 1,
+            tcrIntID: '1',
             validTo,
           },
           certificates: {
@@ -174,7 +175,7 @@ describe('Integration | TCR Routes', () => {
           payload: {
             businUnitCode: 'bb123bb123',
             issuerNUIS: 'I12345678I',
-            tcrIntID: 1,
+            tcrIntID: '1',
             validFrom: validFrom.toISOString(),
             validTo: validTo.toISOString(),
           },
@@ -195,7 +196,7 @@ describe('Integration | TCR Routes', () => {
         .send({
           payload: {
             issuerNUIS: 'I12345678I',
-            tcrIntID: 1,
+            tcrIntID: '1',
           },
           certificates: {
             privateKey,
@@ -212,7 +213,7 @@ describe('Integration | TCR Routes', () => {
         .send({
           payload: {
             businUnitCode: 'bb123bb123',
-            tcrIntID: 1,
+            tcrIntID: '1',
           },
           certificates: {
             privateKey,
@@ -249,7 +250,7 @@ describe('Integration | TCR Routes', () => {
             businUnitCode: 'bb123bb123',
             issuerNUIS: 'I12345678I',
             regDateTime: new Date().toUTCString(),
-            tcrIntID: 1,
+            tcrIntID: '1',
           },
           certificates: {
             privateKey,
@@ -270,7 +271,7 @@ describe('Integration | TCR Routes', () => {
             businUnitCode: 'bb123bb123',
             issuerNUIS: 'I12345678I',
             regDateTime: date,
-            tcrIntID: 1,
+            tcrIntID: '1',
           },
           certificates: {
             privateKey,
