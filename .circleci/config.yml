@@ -3,7 +3,7 @@ jobs:
   build:
     docker:
       # specify the version you desire here
-      - image: circleci/node:10.16
+      - image: circleci/node:12.16
         environment:
           TYPEORM_HOST: localhost
 
