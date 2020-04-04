@@ -1,4 +1,4 @@
-import joi, { string } from 'joi';
+import joi, { string } from '@hapi/joi';
 import { notFound, converter } from '../../../../api/middlewares/error';
 import Boom from '@hapi/boom';
 import {
@@ -56,11 +56,14 @@ describe('Unit | Middleware | Error', () => {
 
     it('calls res with a 400 status on a validation err', () => {
       expect.assertions(3);
-      const { error } = joi.validate({ name: 'blah' }, { title: joi.string() });
-      converter(error, req, res, nextFn);
-      expect(res.status.mock.calls.length).toBe(1);
-      expect(res.status.mock.calls[0][0]).toBe(400);
-      expect(res.json.mock.calls.length).toBe(1);
+      try {
+        joi.attempt({ name: 'blah' }, joi.object({ title: joi.string() }));
+      } catch (e) {
+        converter(e, req, res, nextFn);
+        expect(res.status.mock.calls.length).toBe(1);
+        expect(res.status.mock.calls[0][0]).toBe(400);
+        expect(res.json.mock.calls.length).toBe(1);
+      }
     });
 
     it('calls res with a 404 status on a ObjectID cast error', () => {

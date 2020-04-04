@@ -1,4 +1,4 @@
-import joi from 'joi';
+import joi from '@hapi/joi';
 import {
   INVOICE_TYPES,
   SELF_ISS_TYPES,
@@ -24,16 +24,13 @@ const invoiceItemSchema = joi.object({
     then: joi.boolean().required(),
     otherwise: joi.forbidden(),
   }),
-  exemptFromVAT: joi.string().valid(EXEMPT_FROM_VAT_TYPES),
+  exemptFromVAT: joi.string().valid(...EXEMPT_FROM_VAT_TYPES),
   VATRate: joi.number().required(),
 });
 
 const consumptionTaxItemsSchema = joi.object({
   consTaxRate: joi.number().required(), // percentage (e.g. 10.00),
-  numOfItems: joi
-    .number()
-    .min(1)
-    .required(),
+  numOfItems: joi.number().min(1).required(),
   priceBefConsTax: joi.number().required(),
 });
 
@@ -44,7 +41,7 @@ const voucherSchema = joi.object({
 const payMethodSchema = joi.object({
   type: joi
     .string()
-    .valid(PAYMENT_METHOD_TYPES)
+    .valid(...PAYMENT_METHOD_TYPES)
     .required(),
   amt: joi.number(),
   compCard: joi.string().max(50),
@@ -54,7 +51,7 @@ const payMethodSchema = joi.object({
 const feeSchema = joi.object({
   type: joi
     .string()
-    .valid(FEE_TYPES)
+    .valid(...FEE_TYPES)
     .required(),
   amt: joi.number().required(),
 });
@@ -69,21 +66,15 @@ const summaryIICRefSchema = joi.object({
     .required(),
 });
 
-export const createInvoicePayloadSchema = {
+export const createInvoicePayloadSchema = joi.object({
   typeOfInv: joi
     .string()
-    .valid(INVOICE_TYPES)
+    .valid(...INVOICE_TYPES)
     .required(),
   isSimplifiedInv: joi.boolean().default(false),
-  typeOfSelfIss: joi.string().valid(SELF_ISS_TYPES),
-  issueDateTime: joi
-    .date()
-    .iso()
-    .required(),
-  invOrdNum: joi
-    .number()
-    .min(1)
-    .required(),
+  typeOfSelfIss: joi.string().valid(...SELF_ISS_TYPES),
+  issueDateTime: joi.date().iso().required(),
+  invOrdNum: joi.number().min(1).required(),
   tcrCode: joi.when('typeOfInv', {
     is: INVOICE_TYPE_CASH, // rquired only for cash invoices
     then: joi.string().required(),
@@ -101,27 +92,18 @@ export const createInvoicePayloadSchema = {
   businUnitCode: joi.string().required(),
   isSubseqDeliv: joi.boolean(),
   isReverseCharge: joi.boolean(),
-  isBadDebt: joi.boolean(),
-  payDeadline: joi
-    .date()
-    .iso()
-    .min('now'),
+  isBadDebt: joi.boolean().default(false),
+  payDeadline: joi.date().iso().min('now'),
   currency: joi.object({
     code: joi
       .string()
       .required()
-      .valid(ALLOWED_CURRENCY_CODES),
+      .valid(...ALLOWED_CURRENCY_CODES),
     exRate: joi.number().required(),
   }),
   supplyDateOrPeriod: joi.object({
-    start: joi
-      .date()
-      .iso()
-      .required(),
-    end: joi
-      .date()
-      .iso()
-      .required(),
+    start: joi.date().iso().required(),
+    end: joi.date().iso().required(),
   }),
   correctiveInvoice: joi.object({
     iicRef: joi.string().required(),
@@ -133,20 +115,20 @@ export const createInvoicePayloadSchema = {
       .required(),
     type: joi
       .string()
-      .valid(CORRECTIVE_INVOICE_TYPES)
+      .valid(...CORRECTIVE_INVOICE_TYPES)
       .required(),
   }),
   seller: joi
     .object({
       idType: joi
         .string()
-        .valid(ID_TYPES)
+        .valid(...ID_TYPES)
         .required(),
       idNum: joi.string().required(),
       name: joi.string().required(),
       address: joi.string(),
       town: joi.string(),
-      country: joi.string().valid(ALLOWED_COUNTRY_CODES),
+      country: joi.string().valid(...ALLOWED_COUNTRY_CODES),
     })
     .required(),
   buyer: joi.when('typeOfSelfIss', {
@@ -155,46 +137,39 @@ export const createInvoicePayloadSchema = {
       .object({
         idType: joi
           .string()
-          .valid(ID_TYPES)
+          .valid(...ID_TYPES)
           .required(),
         idNum: joi.string().required(),
         name: joi.string().required(),
         address: joi.string(),
         town: joi.string(),
-        country: joi.string().valid(ALLOWED_COUNTRY_CODES),
+        country: joi.string().valid(...ALLOWED_COUNTRY_CODES),
       })
       .required(),
     otherwise: joi.object({
-      idType: joi.string().valid(ID_TYPES),
+      idType: joi.string().valid(...ID_TYPES),
       idNum: joi.string(),
       name: joi.string(),
       address: joi.string(),
       town: joi.string(),
-      country: joi.string().valid(ALLOWED_COUNTRY_CODES),
+      country: joi.string().valid(...ALLOWED_COUNTRY_CODES),
     }),
   }),
 
-  payMethods: joi
-    .array()
-    .items(payMethodSchema)
-    .min(1)
-    .required(),
-  items: joi
-    .array()
-    .items(invoiceItemSchema)
-    .default([]),
+  payMethods: joi.array().items(payMethodSchema).min(1).required(),
+  items: joi.array().items(invoiceItemSchema).default([]),
 
   consTaxes: joi.array().items(consumptionTaxItemsSchema),
   fees: joi.array().items(feeSchema),
   sumIICRefs: joi.array().items(summaryIICRefSchema),
-};
+});
 
 const sameTaxGroupSchema = joi.object({
   VATRate: joi.number().required(),
   numOfItems: joi.number().required(),
   priceBeforeVAT: joi.number().required(),
   VATAmt: joi.number().required(),
-  exemptFromVAT: joi.string().valid(EXEMPT_FROM_VAT_TYPES),
+  exemptFromVAT: joi.string().valid(...EXEMPT_FROM_VAT_TYPES),
 });
 
 const rawInvoiceItemSchema = invoiceItemSchema.keys({
@@ -208,8 +183,8 @@ const rawConsumptionTaxItemsSchema = consumptionTaxItemsSchema.keys({
   consTaxAmount: joi.number().required(),
 });
 
-export const createRawInvoicePayloadSchema = {
-  ...createInvoicePayloadSchema,
+export const createRawInvoicePayloadSchema = createInvoicePayloadSchema.keys({
+  // ...createInvoicePayloadSchema,
 
   invNum: joi.string().required(),
   totPriceWoVAT: joi.number().required(),
@@ -217,13 +192,7 @@ export const createRawInvoicePayloadSchema = {
   totPrice: joi.number().required(),
   iic: joi.string().required(),
   iicSignature: joi.string().required(),
-  sameTaxes: joi
-    .array()
-    .items(sameTaxGroupSchema)
-    .default([]),
-  items: joi
-    .array()
-    .items(rawInvoiceItemSchema)
-    .default([]),
+  sameTaxes: joi.array().items(sameTaxGroupSchema).default([]),
+  items: joi.array().items(rawInvoiceItemSchema).default([]),
   constTaxes: joi.array().items(rawConsumptionTaxItemsSchema),
-};
+});

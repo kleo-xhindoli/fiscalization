@@ -402,7 +402,7 @@ describe('Integration | Invoice routes', () => {
     });
 
     it(`should respond with 400 if typeOfInv is Cash and
-      cashRegister is missing`, async () => {
+      tcrCode is missing`, async () => {
       const res = await request(app)
         .post('/api/invoices/register')
         .set({ 'X-Api-Key': MAGNUM_API_KEY })
