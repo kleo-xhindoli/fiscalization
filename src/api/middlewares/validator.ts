@@ -2,6 +2,7 @@ import { Response } from 'express';
 import joi, { attempt, object, string, Schema } from '@hapi/joi';
 import { NextFn } from '../../types';
 import Boom from '@hapi/boom';
+import RSA from 'node-rsa';
 
 export function validateBody(schema: Schema) {
   return (req: any, res: Response, next: NextFn) => {
@@ -27,7 +28,19 @@ export function validateQueryParams(schema: Schema) {
   };
 }
 
-export function validateCertificates(req: any, res: Response, next: NextFn) {
+class SchemaValidationError extends Error {
+  constructor() {
+    super('Certificate schema validation failed');
+  }
+}
+
+class InvalidRSAPrivateKeyError extends Error {
+  constructor() {
+    super('Invalid RSA Private Key');
+  }
+}
+
+const validateCertificateSchema = (body: any) => {
   const certificatesSchema = joi.object({
     payload: object().required(),
     certificates: object({
@@ -37,12 +50,37 @@ export function validateCertificates(req: any, res: Response, next: NextFn) {
   });
 
   try {
-    const validationResult = attempt(req.body, certificatesSchema);
+    const validationResult = attempt(body, certificatesSchema);
+    const privateKey = validationResult.certificates.privateKey;
+    const certificate = validationResult.certificates.certificate;
+    return { privateKey, certificate };
+  } catch (e) {
+    throw new SchemaValidationError();
+  }
+};
+
+const validatePrivateKey = (privateKey: string) => {
+  // TODO: Skip this for Magnum
+  try {
+    new RSA(privateKey);
+  } catch (e) {
+    throw new InvalidRSAPrivateKeyError();
+  }
+};
+
+export function validateCertificates(req: any, res: Response, next: NextFn) {
+  try {
+    const { privateKey, certificate } = validateCertificateSchema(req.body);
     req.body = req.body.payload; // Other endpoints don't have to worry about the certs
-    req.privateKey = validationResult.certificates.privateKey;
-    req.certificate = validationResult.certificates.certificate;
+    req.certificate = certificate;
+    req.privateKey = privateKey;
+    validatePrivateKey(privateKey);
     next();
   } catch (e) {
-    next(Boom.forbidden('Certificates are missing from body.'));
+    if (e instanceof SchemaValidationError) {
+      next(Boom.forbidden('Certificates are missing from body.'));
+    } else if (e instanceof InvalidRSAPrivateKeyError) {
+      next(Boom.forbidden('Invalid Private Key'));
+    }
   }
 }

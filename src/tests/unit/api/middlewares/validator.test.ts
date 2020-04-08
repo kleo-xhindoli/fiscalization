@@ -6,6 +6,8 @@ import {
   validateCertificates,
 } from '../../../../api/middlewares/validator';
 
+import { privateKey, certificate } from '../../../__test-data__/keys';
+
 const nextFn = jest.fn();
 let req: any = {};
 let res: any = {};
@@ -297,8 +299,8 @@ describe('Unit | Middleware | Validator', () => {
         body: {
           payload: {},
           certificates: {
-            privateKey: 'Test',
-            certificate: 'Test',
+            privateKey,
+            certificate,
           },
         },
       };

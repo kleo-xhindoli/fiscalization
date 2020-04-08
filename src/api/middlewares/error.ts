@@ -7,6 +7,7 @@ import {
   ClientFiscalizationError,
   ServerFiscalizationError,
   FiscalizationError,
+  InvalidPrivateKey,
 } from '../../utils/errors';
 
 export function handler(err: any, req: Request, res: Response) {
@@ -70,6 +71,11 @@ export function converter(err: any, req: Request, res: Response, next: NextFn) {
   // JSON Parse error
   if (err instanceof SyntaxError && err.message.includes('JSON')) {
     const error = Boom.badRequest(err.message);
+    return handler(error, req, res);
+  }
+
+  if (err instanceof InvalidPrivateKey) {
+    const error = Boom.forbidden(err.message);
     return handler(error, req, res);
   }
 

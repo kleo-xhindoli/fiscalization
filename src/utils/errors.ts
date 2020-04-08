@@ -10,6 +10,12 @@ export class InvalidApiKey extends BaseError {
   }
 }
 
+export class InvalidPrivateKey extends BaseError {
+  constructor() {
+    super('Invalid private key');
+  }
+}
+
 export class MissingSoapClientError extends BaseError {
   constructor() {
     super("SOAP Client hasn't been initialized.");

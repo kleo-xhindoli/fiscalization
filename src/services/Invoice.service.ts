@@ -21,7 +21,7 @@ import config from '../config';
 import NodeRSA from 'node-rsa';
 import crypto from 'crypto';
 import { sendRegisterInvoiceRequest } from './fiscalization';
-import { FiscalizationError } from '../utils/errors';
+import { FiscalizationError, InvalidPrivateKey } from '../utils/errors';
 
 export async function registerInvoice(
   invoiceRequest: RegisterInvoiceRequest,
@@ -49,6 +49,8 @@ export async function registerInvoice(
     };
   } catch (e) {
     if (e instanceof FiscalizationError) {
+      e.error.detail = e.error.detail || {};
+      
       e.error.detail.request = {
         ...fiscInvoiceRequest.body,
         softCode: undefined,
@@ -223,13 +225,17 @@ export function generateIICSignature(
     `|${softNum}` +
     `|${totalPrice}`;
 
-  const key = new NodeRSA(privateKey, 'private');
-  key.setOptions({ signingScheme: 'pkcs1-sha256' });
-  const buffer = Buffer.from(iicInput, 'utf8');
-  const signature = key
-    .sign(buffer)
-    .toString('hex')
-    .toUpperCase();
+  try {
+    const key = new NodeRSA(privateKey, 'private');
+    key.setOptions({ signingScheme: 'pkcs1-sha256' });
+    const buffer = Buffer.from(iicInput, 'utf8');
+    const signature = key
+      .sign(buffer)
+      .toString('hex')
+      .toUpperCase();
 
-  return signature;
+    return signature;
+  } catch (e) {
+    throw new InvalidPrivateKey();
+  }
 }
