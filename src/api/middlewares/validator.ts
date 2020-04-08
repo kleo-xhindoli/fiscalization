@@ -48,6 +48,12 @@ class InvalidCertificateError extends Error {
   }
 }
 
+class InvalidCertificateIssuerError extends Error {
+  constructor() {
+    super('Invalid Certificate');
+  }
+}
+
 class CertificateExpiredError extends Error {
   constructor() {
     super('Certificate has expired');
@@ -84,18 +90,25 @@ const validatePrivateKey = (privateKey: string) => {
 
 const validateCertificate = (cert: string) => {
   const pki = forge.pki;
+  let certificate: forge.pki.Certificate | null = null;
   // TODO: Skip this for Magnum
   try {
-    const certificate = pki.certificateFromPem(cert);
-    // TODO: Validate NUIS
-    // TODO: Validate Issuer
-    const { notAfter } = certificate.validity;
-    if (isPast(notAfter)) {
-      throw new CertificateExpiredError();
-    }
+    certificate = pki.certificateFromPem(cert);
   } catch (e) {
     throw new InvalidCertificateError();
   }
+
+  // TODO: Validate NUIS
+  const { notAfter } = certificate.validity;
+  if (isPast(notAfter)) {
+    throw new CertificateExpiredError();
+  }
+
+  // TODO: Consider enableing in the future. Might not be too safe due to hardcoded string.
+  // const issuer = certificate.issuer.getField('CN');
+  // if (issuer !== 'NAIS Class 3 Certification Authority') {
+  //   throw new InvalidCertificateIssuerError()
+  // }
 };
 
 export function validateCertificates(req: any, res: Response, next: NextFn) {
@@ -116,6 +129,8 @@ export function validateCertificates(req: any, res: Response, next: NextFn) {
       next(Boom.forbidden('Invalid Certificate'));
     } else if (e instanceof CertificateExpiredError) {
       next(Boom.forbidden('Certificate has expired'));
+    } else if (e instanceof InvalidCertificateIssuerError) {
+      next(Boom.forbidden('Certificate not issued by NAIS'));
     } else {
       next(Boom.boomify(e));
     }
