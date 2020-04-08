@@ -3,6 +3,8 @@ import joi, { attempt, object, string, Schema } from '@hapi/joi';
 import { NextFn } from '../../types';
 import Boom from '@hapi/boom';
 import RSA from 'node-rsa';
+import forge from 'node-forge';
+import { isFuture, isPast } from 'date-fns';
 
 export function validateBody(schema: Schema) {
   return (req: any, res: Response, next: NextFn) => {
@@ -40,6 +42,18 @@ class InvalidRSAPrivateKeyError extends Error {
   }
 }
 
+class InvalidCertificateError extends Error {
+  constructor() {
+    super('Invalid Certificate');
+  }
+}
+
+class CertificateExpiredError extends Error {
+  constructor() {
+    super('Certificate has expired');
+  }
+}
+
 const validateCertificateSchema = (body: any) => {
   const certificatesSchema = joi.object({
     payload: object().required(),
@@ -68,6 +82,22 @@ const validatePrivateKey = (privateKey: string) => {
   }
 };
 
+const validateCertificate = (cert: string) => {
+  const pki = forge.pki;
+  // TODO: Skip this for Magnum
+  try {
+    const certificate = pki.certificateFromPem(cert);
+    // TODO: Validate NUIS
+    // TODO: Validate Issuer
+    const { notAfter } = certificate.validity;
+    if (isPast(notAfter)) {
+      throw new CertificateExpiredError();
+    }
+  } catch (e) {
+    throw new InvalidCertificateError();
+  }
+};
+
 export function validateCertificates(req: any, res: Response, next: NextFn) {
   try {
     const { privateKey, certificate } = validateCertificateSchema(req.body);
@@ -75,12 +105,19 @@ export function validateCertificates(req: any, res: Response, next: NextFn) {
     req.certificate = certificate;
     req.privateKey = privateKey;
     validatePrivateKey(privateKey);
+    validateCertificate(certificate);
     next();
   } catch (e) {
     if (e instanceof SchemaValidationError) {
       next(Boom.forbidden('Certificates are missing from body.'));
     } else if (e instanceof InvalidRSAPrivateKeyError) {
       next(Boom.forbidden('Invalid Private Key'));
+    } else if (e instanceof InvalidCertificateError) {
+      next(Boom.forbidden('Invalid Certificate'));
+    } else if (e instanceof CertificateExpiredError) {
+      next(Boom.forbidden('Certificate has expired'));
+    } else {
+      next(Boom.boomify(e));
     }
   }
 }

@@ -6,7 +6,12 @@ import {
   validateCertificates,
 } from '../../../../api/middlewares/validator';
 
-import { privateKey, certificate } from '../../../__test-data__/keys';
+import {
+  privateKey,
+  certificate,
+  malformedPK,
+  malformedCert,
+} from '../../../__test-data__/keys';
 
 const nextFn = jest.fn();
 let req: any = {};
@@ -408,6 +413,59 @@ describe('Unit | Middleware | Validator', () => {
 
       expect(nextFn.mock.calls.length).toBe(1);
       expect(nextFn.mock.calls[0][0]).toBeDefined();
+    });
+
+    /** Certificate & Private key validity checks tests */
+    it(`calls next with an argument when the private key is malformed`, () => {
+      req = {
+        body: {
+          payload: {},
+          certificates: {
+            privateKey: malformedPK,
+            certificate: certificate,
+          },
+        },
+      };
+
+      validateCertificates(req, res, nextFn);
+
+      expect(nextFn.mock.calls.length).toBe(1);
+      expect(nextFn.mock.calls[0][0]).toBeDefined();
+      const { output } = nextFn.mock.calls[0][0];
+      expect(output).toMatchObject({
+        statusCode: 403,
+        payload: {
+          statusCode: 403,
+          error: 'Forbidden',
+          message: 'Invalid Private Key',
+        },
+      });
+    });
+
+    it(`calls next with an argument when the certificate is malformed`, () => {
+      req = {
+        body: {
+          payload: {},
+          certificates: {
+            privateKey: privateKey,
+            certificate: malformedCert,
+          },
+        },
+      };
+
+      validateCertificates(req, res, nextFn);
+
+      expect(nextFn.mock.calls.length).toBe(1);
+      expect(nextFn.mock.calls[0][0]).toBeDefined();
+      const { output } = nextFn.mock.calls[0][0];
+      expect(output).toMatchObject({
+        statusCode: 403,
+        payload: {
+          statusCode: 403,
+          error: 'Forbidden',
+          message: 'Invalid Certificate',
+        },
+      });
     });
   });
 });
