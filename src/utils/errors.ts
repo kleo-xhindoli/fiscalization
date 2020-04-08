@@ -39,3 +39,33 @@ export class ServerFiscalizationError extends FiscalizationError {
     super(error);
   }
 }
+
+export class InvalidRSAPrivateKeyError extends Error {
+  constructor() {
+    super('Invalid RSA Private Key');
+  }
+}
+
+export class InvalidCertificateError extends Error {
+  constructor() {
+    super('Invalid Certificate');
+  }
+}
+
+export class InvalidCertificateIssuerError extends Error {
+  constructor() {
+    super('Invalid Certificate');
+  }
+}
+
+export class CertificateExpiredError extends Error {
+  constructor() {
+    super('Certificate has expired');
+  }
+}
+
+export class KeyDoesNotMatchCertError extends Error {
+  constructor() {
+    super('Certificate does not match provided Private Key');
+  }
+}

@@ -2,9 +2,15 @@ import { Response } from 'express';
 import joi, { attempt, object, string, Schema } from '@hapi/joi';
 import { NextFn } from '../../types';
 import Boom from '@hapi/boom';
-import RSA from 'node-rsa';
-import forge from 'node-forge';
-import { isFuture, isPast } from 'date-fns';
+
+import {
+  InvalidRSAPrivateKeyError,
+  InvalidCertificateError,
+  CertificateExpiredError,
+  InvalidCertificateIssuerError,
+  KeyDoesNotMatchCertError,
+} from '../../utils/errors';
+import { validateCryptoIntegrity } from '../../utils/crypto-utils';
 
 export function validateBody(schema: Schema) {
   return (req: any, res: Response, next: NextFn) => {
@@ -36,30 +42,6 @@ class SchemaValidationError extends Error {
   }
 }
 
-class InvalidRSAPrivateKeyError extends Error {
-  constructor() {
-    super('Invalid RSA Private Key');
-  }
-}
-
-class InvalidCertificateError extends Error {
-  constructor() {
-    super('Invalid Certificate');
-  }
-}
-
-class InvalidCertificateIssuerError extends Error {
-  constructor() {
-    super('Invalid Certificate');
-  }
-}
-
-class CertificateExpiredError extends Error {
-  constructor() {
-    super('Certificate has expired');
-  }
-}
-
 const validateCertificateSchema = (body: any) => {
   const certificatesSchema = joi.object({
     payload: object().required(),
@@ -79,46 +61,15 @@ const validateCertificateSchema = (body: any) => {
   }
 };
 
-const validatePrivateKey = (privateKey: string) => {
-  // TODO: Skip this for Magnum
-  try {
-    new RSA(privateKey);
-  } catch (e) {
-    throw new InvalidRSAPrivateKeyError();
-  }
-};
-
-const validateCertificate = (cert: string) => {
-  const pki = forge.pki;
-  let certificate: forge.pki.Certificate | null = null;
-  // TODO: Skip this for Magnum
-  try {
-    certificate = pki.certificateFromPem(cert);
-  } catch (e) {
-    throw new InvalidCertificateError();
-  }
-
-  // TODO: Validate NUIS
-  const { notAfter } = certificate.validity;
-  if (isPast(notAfter)) {
-    throw new CertificateExpiredError();
-  }
-
-  // TODO: Consider enableing in the future. Might not be too safe due to hardcoded string.
-  // const issuer = certificate.issuer.getField('CN');
-  // if (issuer !== 'NAIS Class 3 Certification Authority') {
-  //   throw new InvalidCertificateIssuerError()
-  // }
-};
-
 export function validateCertificates(req: any, res: Response, next: NextFn) {
   try {
     const { privateKey, certificate } = validateCertificateSchema(req.body);
     req.body = req.body.payload; // Other endpoints don't have to worry about the certs
     req.certificate = certificate;
     req.privateKey = privateKey;
-    validatePrivateKey(privateKey);
-    validateCertificate(certificate);
+
+    // TODO: Skip this for Magnum
+    validateCryptoIntegrity(certificate, privateKey);
     next();
   } catch (e) {
     if (e instanceof SchemaValidationError) {
@@ -131,6 +82,8 @@ export function validateCertificates(req: any, res: Response, next: NextFn) {
       next(Boom.forbidden('Certificate has expired'));
     } else if (e instanceof InvalidCertificateIssuerError) {
       next(Boom.forbidden('Certificate not issued by NAIS'));
+    } else if (e instanceof KeyDoesNotMatchCertError) {
+      next(Boom.forbidden('Private Key does not match provided Certificate'));
     } else {
       next(Boom.boomify(e));
     }
