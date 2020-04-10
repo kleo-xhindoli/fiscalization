@@ -10,6 +10,12 @@ export class InvalidApiKey extends BaseError {
   }
 }
 
+export class InvalidPrivateKey extends BaseError {
+  constructor() {
+    super('Invalid private key');
+  }
+}
+
 export class MissingSoapClientError extends BaseError {
   constructor() {
     super("SOAP Client hasn't been initialized.");
@@ -31,5 +37,41 @@ export class ClientFiscalizationError extends FiscalizationError {
 export class ServerFiscalizationError extends FiscalizationError {
   constructor(error: any) {
     super(error);
+  }
+}
+
+export class InvalidRSAPrivateKeyError extends Error {
+  constructor() {
+    super('Invalid RSA Private Key');
+  }
+}
+
+export class InvalidCertificateError extends Error {
+  constructor() {
+    super('Invalid Certificate');
+  }
+}
+
+export class InvalidCertificateIssuerError extends Error {
+  constructor() {
+    super('Invalid Certificate');
+  }
+}
+
+export class CertificateExpiredError extends Error {
+  constructor() {
+    super('Certificate has expired');
+  }
+}
+
+export class KeyDoesNotMatchCertError extends Error {
+  constructor() {
+    super('Certificate does not match provided Private Key');
+  }
+}
+
+export class SchemaValidationError extends Error {
+  constructor() {
+    super('Certificate schema validation failed');
   }
 }

@@ -6,6 +6,18 @@ import {
   validateCertificates,
 } from '../../../../api/middlewares/validator';
 
+import {
+  privateKey,
+  certificate,
+  malformedPK,
+  malformedCert,
+  kleoCert,
+  selfSignedCert,
+  noNewLinePK,
+  noHeaderPK,
+  noHeaderCert,
+} from '../../../__test-data__/keys';
+
 const nextFn = jest.fn();
 let req: any = {};
 let res: any = {};
@@ -297,8 +309,8 @@ describe('Unit | Middleware | Validator', () => {
         body: {
           payload: {},
           certificates: {
-            privateKey: 'Test',
-            certificate: 'Test',
+            privateKey,
+            certificate,
           },
         },
       };
@@ -406,6 +418,208 @@ describe('Unit | Middleware | Validator', () => {
 
       expect(nextFn.mock.calls.length).toBe(1);
       expect(nextFn.mock.calls[0][0]).toBeDefined();
+    });
+
+    /** Certificate & Private key validity checks tests */
+    it(`calls next no arguments when the private key and certificate are valid`, () => {
+      req = {
+        body: {
+          payload: {},
+          certificates: {
+            privateKey: privateKey,
+            certificate: certificate,
+          },
+        },
+      };
+
+      validateCertificates(req, res, nextFn);
+
+      expect(nextFn.mock.calls.length).toBe(1);
+      expect(nextFn.mock.calls[0][0]).toBeUndefined();
+    });
+
+    it(`calls next with an argument when the private key is malformed`, () => {
+      req = {
+        body: {
+          payload: {},
+          certificates: {
+            privateKey: malformedPK,
+            certificate: certificate,
+          },
+        },
+      };
+
+      validateCertificates(req, res, nextFn);
+
+      expect(nextFn.mock.calls.length).toBe(1);
+      expect(nextFn.mock.calls[0][0]).toBeDefined();
+      const { output } = nextFn.mock.calls[0][0];
+      expect(output).toMatchObject({
+        statusCode: 403,
+        payload: {
+          statusCode: 403,
+          error: 'Forbidden',
+          message: 'Invalid Private Key',
+        },
+      });
+    });
+
+    it(`calls next with an argument when the certificate is malformed`, () => {
+      req = {
+        body: {
+          payload: {},
+          certificates: {
+            privateKey: privateKey,
+            certificate: malformedCert,
+          },
+        },
+      };
+
+      validateCertificates(req, res, nextFn);
+
+      expect(nextFn.mock.calls.length).toBe(1);
+      expect(nextFn.mock.calls[0][0]).toBeDefined();
+      const { output } = nextFn.mock.calls[0][0];
+      expect(output).toMatchObject({
+        statusCode: 403,
+        payload: {
+          statusCode: 403,
+          error: 'Forbidden',
+          message: 'Invalid Certificate',
+        },
+      });
+    });
+
+    // Functionality disabled
+    xit(`calls next with an argument when the certificate does not match the private key`, () => {
+      req = {
+        body: {
+          payload: {},
+          certificates: {
+            privateKey: privateKey,
+            certificate: kleoCert,
+          },
+        },
+      };
+
+      validateCertificates(req, res, nextFn);
+
+      expect(nextFn.mock.calls.length).toBe(1);
+      expect(nextFn.mock.calls[0][0]).toBeDefined();
+      const { output } = nextFn.mock.calls[0][0];
+      expect(output).toMatchObject({
+        statusCode: 403,
+        payload: {
+          statusCode: 403,
+          error: 'Forbidden',
+          message: 'Private Key does not match provided Certificate',
+        },
+      });
+    });
+
+    // Functionality disabled
+    xit(`calls next with an argument when the certificate is not issued by NAIS`, () => {
+      req = {
+        body: {
+          payload: {},
+          certificates: {
+            privateKey: privateKey,
+            certificate: selfSignedCert,
+          },
+        },
+      };
+
+      validateCertificates(req, res, nextFn);
+
+      expect(nextFn.mock.calls.length).toBe(1);
+      expect(nextFn.mock.calls[0][0]).toBeDefined();
+      const { output } = nextFn.mock.calls[0][0];
+      expect(output).toMatchObject({
+        statusCode: 403,
+        payload: {
+          statusCode: 403,
+          error: 'Forbidden',
+          message: 'Certificate not issued by NAIS',
+        },
+      });
+    });
+
+    it(`calls next with an argument when the private key is missing new lines`, () => {
+      req = {
+        body: {
+          payload: {},
+          certificates: {
+            privateKey: noNewLinePK,
+            certificate: certificate,
+          },
+        },
+      };
+
+      validateCertificates(req, res, nextFn);
+
+      expect(nextFn.mock.calls.length).toBe(1);
+      expect(nextFn.mock.calls[0][0]).toBeDefined();
+      const { output } = nextFn.mock.calls[0][0];
+      expect(output).toMatchObject({
+        statusCode: 403,
+        payload: {
+          statusCode: 403,
+          error: 'Forbidden',
+          message: 'Invalid Private Key',
+        },
+      });
+    });
+
+    it(`calls next with an argument when the private key is missing RSA headers`, () => {
+      req = {
+        body: {
+          payload: {},
+          certificates: {
+            privateKey: noHeaderPK,
+            certificate: certificate,
+          },
+        },
+      };
+
+      validateCertificates(req, res, nextFn);
+
+      expect(nextFn.mock.calls.length).toBe(1);
+      expect(nextFn.mock.calls[0][0]).toBeDefined();
+      const { output } = nextFn.mock.calls[0][0];
+      expect(output).toMatchObject({
+        statusCode: 403,
+        payload: {
+          statusCode: 403,
+          error: 'Forbidden',
+          message: 'Invalid Private Key',
+        },
+      });
+    });
+
+    it(`calls next with an argument when the certificate is missing RSA headers`, () => {
+      req = {
+        body: {
+          payload: {},
+          certificates: {
+            privateKey: privateKey,
+            certificate: noHeaderCert,
+          },
+        },
+      };
+
+      validateCertificates(req, res, nextFn);
+
+      expect(nextFn.mock.calls.length).toBe(1);
+      expect(nextFn.mock.calls[0][0]).toBeDefined();
+      const { output } = nextFn.mock.calls[0][0];
+      expect(output).toMatchObject({
+        statusCode: 403,
+        payload: {
+          statusCode: 403,
+          error: 'Forbidden',
+          message: 'Invalid Certificate',
+        },
+      });
     });
   });
 });
