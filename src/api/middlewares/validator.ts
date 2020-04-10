@@ -9,6 +9,7 @@ import {
   CertificateExpiredError,
   InvalidCertificateIssuerError,
   KeyDoesNotMatchCertError,
+  SchemaValidationError,
 } from '../../utils/errors';
 import { validateCryptoIntegrity } from '../../utils/crypto-utils';
 
@@ -34,12 +35,6 @@ export function validateQueryParams(schema: Schema) {
       next(e);
     }
   };
-}
-
-class SchemaValidationError extends Error {
-  constructor() {
-    super('Certificate schema validation failed');
-  }
 }
 
 const validateCertificateSchema = (body: any) => {

@@ -69,3 +69,9 @@ export class KeyDoesNotMatchCertError extends Error {
     super('Certificate does not match provided Private Key');
   }
 }
+
+export class SchemaValidationError extends Error {
+  constructor() {
+    super('Certificate schema validation failed');
+  }
+}
