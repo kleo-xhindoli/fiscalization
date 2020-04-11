@@ -1145,7 +1145,7 @@ describe('Integration | Invoice routes', () => {
       expect(res.status).toBe(403);
     });
 
-    it('should register an raw invoice if valid data is provided', async () => {
+    it('should register a raw invoice if valid data is provided', async () => {
       const res = await request(app)
         .post('/api/invoices/registerRaw')
         .set({ 'X-Api-Key': MAGNUM_API_KEY })
@@ -1169,7 +1169,7 @@ describe('Integration | Invoice routes', () => {
         isBadDebt: false,
         businUnitCode: 'bg517kw842',
         tcrCode: 'vb721zy972',
-        issueDateTime: '2020-03-19T12:23:09.658Z',
+        issueDateTime: '2020-03-19T13:23:09+01:00',
         invOrdNum: 1,
         isSubseqDeliv: false,
         isIssuerInVAT: true,
