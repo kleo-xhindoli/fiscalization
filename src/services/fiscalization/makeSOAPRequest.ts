@@ -56,8 +56,7 @@ export function getGeneratedRequestXML(
     `als:${rootXmlElement}`
   );
 
-  return xml;
+  const security = getSecurity(key, certificate, rootXmlElement);
+  return security.postProcess(xml)
 
-  // const result = await activeClient[`${methodName}Async`](request);
-  // return result[0]; // result[0] is the JSON parsed response
 }
