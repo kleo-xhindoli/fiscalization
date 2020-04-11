@@ -36,3 +36,28 @@ export async function makeRequest<T extends SOAPResponseObject>(
     throw convertedErr;
   }
 }
+
+export function getGeneratedRequestXML(
+  request: SOAPRequestObject,
+  rootXmlElement: string,
+  key: string,
+  certificate: string
+): string {
+  const activeClient = getClient();
+  if (!activeClient) throw new MissingSoapClientError();
+  const reqSec = getSecurity(key, certificate, rootXmlElement);
+  activeClient.setSecurity(reqSec);
+
+  const xml = activeClient.wsdl.objectToDocumentXML(
+    rootXmlElement,
+    request,
+    'als',
+    'https://eFiskalizimi.tatime.gov.al/FiscalizationService/schema',
+    `als:${rootXmlElement}`
+  );
+
+  return xml;
+
+  // const result = await activeClient[`${methodName}Async`](request);
+  // return result[0]; // result[0] is the JSON parsed response
+}

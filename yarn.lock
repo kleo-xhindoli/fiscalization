@@ -4254,10 +4254,9 @@ snapdragon@^0.8.1:
     source-map-resolve "^0.5.0"
     use "^3.1.0"
 
-soap@^0.30.0:
-  version "0.30.0"
-  resolved "https://registry.yarnpkg.com/soap/-/soap-0.30.0.tgz#f5fb6fd5ca8073d41c973661772acc697e8c8921"
-  integrity sha512-nPDbX8Y/EJNyMXog50BRONUa/S0oaDYvFO3IAegh7IoxOwGpWr6xoyUx+ZgAY9tvstZDnOHRPdfvxDhAVCVyAQ==
+soap@kleo-xhindoli/node-soap#~v0.32.0:
+  version "0.32.0"
+  resolved "https://codeload.github.com/kleo-xhindoli/node-soap/tar.gz/98be0436a20b2231028cf82fc01d9e3f5a73a275"
   dependencies:
     "@types/request" "^2.48.1"
     bluebird "^3.5.0"

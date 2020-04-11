@@ -10,7 +10,7 @@ import {
   Fee,
 } from '../../types';
 import Big from 'big.js';
-import { makeRequest } from './makeSOAPRequest';
+import { makeRequest, getGeneratedRequestXML } from './makeSOAPRequest';
 
 function toDecimalOrUndefined(value?: number | string): string | undefined {
   return value ? Big(value).toFixed(2) : undefined;
@@ -26,7 +26,7 @@ function transformPayMethods(payMethods: PaymentMethod[]) {
 }
 
 function transformItems(items: FiscInvoiceItem[]) {
-  return items.map(item => ({
+  return items.map((item) => ({
     attributes: {
       N: item.name,
       C: item.code,
@@ -46,7 +46,7 @@ function transformItems(items: FiscInvoiceItem[]) {
 }
 
 function transformSameTaxes(sameTaxes: SameTaxGroup[]) {
-  return sameTaxes.map(taxGroup => ({
+  return sameTaxes.map((taxGroup) => ({
     attributes: {
       NumOfItems: taxGroup.numOfItems,
       PriceBefVAT: toDecimalOrUndefined(taxGroup.priceBeforeVAT),
@@ -58,7 +58,7 @@ function transformSameTaxes(sameTaxes: SameTaxGroup[]) {
 }
 
 function transfromConsTaxes(consTaxes: FiscConsumptionTaxGroup[]) {
-  return consTaxes.map(taxGroup => ({
+  return consTaxes.map((taxGroup) => ({
     attributes: {
       NumOfItems: taxGroup.numOfItems,
       PriceBefConsTax: toDecimalOrUndefined(taxGroup.priceBefConsTax),
@@ -69,7 +69,7 @@ function transfromConsTaxes(consTaxes: FiscConsumptionTaxGroup[]) {
 }
 
 function transformFees(fees: Fee[]) {
-  return fees.map(fee => ({
+  return fees.map((fee) => ({
     attributes: {
       Type: fee.type,
       Amt: toDecimalOrUndefined(fee.amt),
@@ -238,4 +238,16 @@ export async function sendRegisterInvoiceRequest(
       FIC: res.FIC,
     },
   };
+}
+
+export function getRegisterInvoiceRequestXML(
+  request: FiscRegisterInvoiceRequest,
+  key: string,
+  cert: string
+) {
+  const { rootXmlElement } = methodNamesMap['registerInvoiceRequest']; // SOAP Action
+  const soapReq = transformRegisterInvoiceRequest(request);
+  const res = getGeneratedRequestXML(soapReq, rootXmlElement, key, cert);
+
+  return res;
 }

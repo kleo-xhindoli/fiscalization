@@ -20,7 +20,10 @@ import { generateSubsequentFiscHeaders } from '../utils/fiscHeaders';
 import config from '../config';
 import NodeRSA from 'node-rsa';
 import crypto from 'crypto';
-import { sendRegisterInvoiceRequest } from './fiscalization';
+import {
+  sendRegisterInvoiceRequest,
+  getRegisterInvoiceRequestXML,
+} from './fiscalization';
 import { FiscalizationError, InvalidPrivateKey } from '../utils/errors';
 
 export async function registerInvoice(
@@ -50,7 +53,7 @@ export async function registerInvoice(
   } catch (e) {
     if (e instanceof FiscalizationError) {
       e.error.detail = e.error.detail || {};
-      
+
       e.error.detail.request = {
         ...fiscInvoiceRequest.body,
         softCode: undefined,
@@ -94,6 +97,32 @@ export async function registerRawInvoice(
   };
 }
 
+export function exportRawInvoice(
+  invoiceRequest: RegisterRawInvoiceRequest,
+  privateKey: string,
+  certificate: string
+): string {
+  const requestHeader = generateSubsequentFiscHeaders(
+    invoiceRequest.isSubseqDeliv
+  );
+
+  const fiscRequest: FiscRegisterInvoiceRequest = {
+    header: requestHeader,
+    body: {
+      ...invoiceRequest,
+      softCode: config.fiscSoftwareCode,
+    },
+  };
+
+  const res = getRegisterInvoiceRequestXML(
+    fiscRequest,
+    privateKey,
+    certificate
+  );
+
+  return res;
+}
+
 function getFiscInvoiceRequest(
   invoiceRequest: RegisterInvoiceRequest,
   privateKey: string
@@ -103,7 +132,7 @@ function getFiscInvoiceRequest(
     invoiceRequest.isSubseqDeliv
   );
   const sameTaxes = getSameTaxItemGroups(fiscInvoiceItems);
-  const consTaxes = invoiceRequest.consTaxes?.map(item => {
+  const consTaxes = invoiceRequest.consTaxes?.map((item) => {
     return {
       ...item,
       consTaxAmount: calculateConsTaxAmount(
@@ -169,7 +198,7 @@ export function getInvNum(invoiceRequest: RegisterInvoiceRequest): string {
 }
 
 function getFiscInvoiceItems(items: InvoiceItem[]): FiscInvoiceItem[] {
-  return items.map(item => {
+  return items.map((item) => {
     const unitPriceWithVAT = calculateUnitPriceWithVAT(
       item.unitPrice,
       item.VATRate
@@ -229,10 +258,7 @@ export function generateIICSignature(
     const key = new NodeRSA(privateKey, 'private');
     key.setOptions({ signingScheme: 'pkcs1-sha256' });
     const buffer = Buffer.from(iicInput, 'utf8');
-    const signature = key
-      .sign(buffer)
-      .toString('hex')
-      .toUpperCase();
+    const signature = key.sign(buffer).toString('hex').toUpperCase();
 
     return signature;
   } catch (e) {

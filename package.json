@@ -56,7 +56,7 @@
     "pg": "^7.17.1",
     "reflect-metadata": "^0.1.13",
     "request": "^2.88.2",
-    "soap": "^0.30.0",
+    "soap": "kleo-xhindoli/node-soap#~v0.32.0",
     "uuid": "^3.4.0",
     "winston": "^3.2.1",
     "xml-crypto": "^1.4.0"
