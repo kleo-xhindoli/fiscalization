@@ -7,6 +7,7 @@ import {
 import {
   registerInvoice,
   registerRawInvoice,
+  exportRawInvoice,
 } from '../../services/Invoice.service';
 import { toCentralEuropeanTimezone } from '../../utils/date-utils';
 
@@ -54,6 +55,23 @@ export async function handleRawInvoice(
   const { privateKey, certificate } = req;
 
   try {
+    request.issueDateTime = toCentralEuropeanTimezone(request.issueDateTime);
+
+    if (request.supplyDateOrPeriod) {
+      // Strip time info from start/end dates
+      const { start, end } = request.supplyDateOrPeriod;
+      request.supplyDateOrPeriod = {
+        start: toCentralEuropeanTimezone(start).split('T')[0],
+        end: toCentralEuropeanTimezone(end).split('T')[0],
+      };
+    }
+
+    if (request.payDeadline) {
+      request.payDeadline = toCentralEuropeanTimezone(
+        request.payDeadline
+      ).split('T')[0];
+    }
+
     const response = await registerRawInvoice(request, privateKey, certificate);
     res.json(response);
   } catch (e) {
@@ -61,30 +79,37 @@ export async function handleRawInvoice(
   }
 }
 
-// NOTE: Invoice correction will be done through the normal route for now
+export async function handleRawInvoiceExport(
+  req: Request,
+  res: Response,
+  next: NextFn
+) {
+  const request: RegisterRawInvoiceRequest = req.validatedBody;
 
-// export async function handleModifyInvoice(
-//   req: Request,
-//   res: Response,
-//   next: NextFn
-// ) {
-//   try {
-//     const request: RegisterInvoiceRequest = req.validatedBody;
-//     const iicRef: string = req.params.iic;
-//     request.issueDateTime = toCentralEuropeanTimezone(
-//       request.issueDateTime
-//     );
-//     const { privateKey, certificate } = req;
+  const { privateKey, certificate } = req;
 
-//     const response = await registerInvoice(
-//       request,
-//       privateKey,
-//       certificate,
-//       iicRef,
-//     );
+  try {
+    request.issueDateTime = toCentralEuropeanTimezone(request.issueDateTime);
 
-//     res.json(response);
-//   } catch (e) {
-//     next(e);
-//   }
-// }
+    if (request.supplyDateOrPeriod) {
+      // Strip time info from start/end dates
+      const { start, end } = request.supplyDateOrPeriod;
+      request.supplyDateOrPeriod = {
+        start: toCentralEuropeanTimezone(start).split('T')[0],
+        end: toCentralEuropeanTimezone(end).split('T')[0],
+      };
+    }
+
+    if (request.payDeadline) {
+      request.payDeadline = toCentralEuropeanTimezone(
+        request.payDeadline
+      ).split('T')[0];
+    }
+
+    const response = await exportRawInvoice(request, privateKey, certificate);
+    res.set('Content-Type', 'text/xml');
+    res.send(response);
+  } catch (e) {
+    next(e);
+  }
+}

@@ -7,6 +7,7 @@ import {
 import {
   handleRegisterInvoice,
   handleRawInvoice,
+  handleRawInvoiceExport,
 } from '../controllers/invoice.controller';
 
 const router = express.Router();
@@ -23,6 +24,12 @@ router.post(
   '/registerRaw',
   validateBody(createRawInvoicePayloadSchema),
   handleRawInvoice
+);
+
+router.post(
+  '/export',
+  validateBody(createRawInvoicePayloadSchema),
+  handleRawInvoiceExport
 );
 
 export default router;

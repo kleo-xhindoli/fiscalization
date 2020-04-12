@@ -108,7 +108,7 @@ export class WSSecurityCert implements ISecurity {
     };
   }
 
-  public postProcess(xml: any, envelopeKey: any) {
+  public postProcess(xml: any, envelopeKey?: any) {
     const xmlWithSec = xml;
 
     const references = this.signatureTransformations;
