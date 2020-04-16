@@ -1,3 +1,4 @@
+// Example key provided in the docs
 export const exampleKey = `-----BEGIN RSA PRIVATE KEY-----
 MIIEpAIBAAKCAQEA6zOR5ItNYHJNVMxljZtd/KQUyGIozbnIJ8IWqcEesktRV5FF
 HviQZsx2DpyeVQTu/Kel9Xh+Z6OZ6t5sADzfYnkwCrsb0FhT+01m2PIHaIUZhVtc

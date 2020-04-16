@@ -6,8 +6,11 @@ import {
   CertificateExpiredError,
   KeyDoesNotMatchCertError,
   InvalidCertificateIssuerError,
+  InvalidPrivateKey,
 } from './errors';
 import isPast from 'date-fns/isPast';
+import crypto from 'crypto';
+import NodeRSA from 'node-rsa';
 
 type PrivateKey = forge.pki.rsa.PrivateKey;
 type PublicKey = forge.pki.rsa.PublicKey;
@@ -40,7 +43,7 @@ const validateCertificate = (certificate: Certificate) => {
     throw new CertificateExpiredError();
   }
 
-  // TODO: Consider enableing in the future. Might not be too safe due to this 
+  // TODO: Consider enableing in the future. Might not be too safe due to this
   // value changing in the future.
   // const issuer = certificate.issuer.getField('CN');
   // if (issuer?.value !== 'NAIS Class 3 Certification Authority') {
@@ -64,4 +67,37 @@ export const validateCryptoIntegrity = (cert: string, key: string) => {
 
   // This is disabled for performance reasons
   // validateMatch(certificate, privateKey);
+};
+
+// Identification code generation utils
+const generateIdentificationCodeSignature = (
+  concatinatedInputs: string,
+  privateKey: string
+) => {
+  try {
+    const key = new NodeRSA(privateKey, 'private');
+    key.setOptions({ signingScheme: 'pkcs1-sha256' });
+    const buffer = Buffer.from(concatinatedInputs, 'utf8');
+    const signature = key.sign(buffer);
+
+    const signatureString = signature.toString('hex').toUpperCase();
+    return { signature, signatureString };
+  } catch (e) {
+    throw new InvalidPrivateKey();
+  }
+};
+
+export const generateIdentificationCode = (
+  concatinatedInputs: string,
+  privateKey: string
+): { ic: string; signature: string } => {
+  const { signature, signatureString } = generateIdentificationCodeSignature(
+    concatinatedInputs,
+    privateKey
+  );
+  const hash = crypto.createHash('md5');
+  hash.update(signature);
+  const digest = hash.digest('hex').toUpperCase();
+
+  return { ic: digest, signature: signatureString };
 };

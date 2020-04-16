@@ -4,7 +4,7 @@ import logger from './logger';
 import request from 'request';
 
 const waitForSecondsAsync = (sec: number) => {
-  return new Promise(resolve => {
+  return new Promise((resolve) => {
     setTimeout(resolve, sec * 1000);
   });
 };

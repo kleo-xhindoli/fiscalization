@@ -18,13 +18,12 @@ import {
 } from '../utils/vat-utls';
 import { generateSubsequentFiscHeaders } from '../utils/fiscHeaders';
 import config from '../config';
-import NodeRSA from 'node-rsa';
-import crypto from 'crypto';
 import {
   sendRegisterInvoiceRequest,
   getRegisterInvoiceRequestXML,
 } from './fiscalization';
-import { FiscalizationError, InvalidPrivateKey } from '../utils/errors';
+import { FiscalizationError } from '../utils/errors';
+import { generateIdentificationCode } from '../utils/crypto-utils';
 
 export async function registerInvoice(
   invoiceRequest: RegisterInvoiceRequest,
@@ -153,7 +152,7 @@ function getFiscInvoiceRequest(
   );
   const invNum = getInvNum(invoiceRequest);
 
-  const iicSignature = generateIICSignature(
+  const { iic, iicSignature } = generateIIC(
     invoiceRequest.seller.idNum,
     invoiceRequest.issueDateTime,
     invNum,
@@ -163,8 +162,6 @@ function getFiscInvoiceRequest(
     totPrice,
     privateKey
   );
-
-  const iic = generateIIC(iicSignature);
 
   // TODO: fail if totPrice >  150,000 && invoice cash
 
@@ -227,14 +224,7 @@ function getFiscInvoiceItems(items: InvoiceItem[]): FiscInvoiceItem[] {
   });
 }
 
-export function generateIIC(signature: string) {
-  const hash = crypto.createHash('md5');
-  hash.update(signature);
-  const digest = hash.digest('hex').toUpperCase();
-  return digest;
-}
-
-export function generateIICSignature(
+export function generateIIC(
   issuerNuis: string,
   issueDateTime: string,
   invoiceNumber: string,
@@ -254,14 +244,10 @@ export function generateIICSignature(
     `|${softNum}` +
     `|${totalPrice}`;
 
-  try {
-    const key = new NodeRSA(privateKey, 'private');
-    key.setOptions({ signingScheme: 'pkcs1-sha256' });
-    const buffer = Buffer.from(iicInput, 'utf8');
-    const signature = key.sign(buffer).toString('hex').toUpperCase();
+  const { ic, signature } = generateIdentificationCode(iicInput, privateKey);
 
-    return signature;
-  } catch (e) {
-    throw new InvalidPrivateKey();
-  }
+  return {
+    iic: ic,
+    iicSignature: signature,
+  };
 }

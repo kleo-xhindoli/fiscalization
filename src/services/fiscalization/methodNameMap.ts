@@ -11,4 +11,8 @@ export default {
     methodName: 'registerInvoice',
     rootXmlElement: 'RegisterInvoiceRequest',
   },
+  registerWTNRequest: {
+    methodName: 'registerWTN',
+    rootXmlElement: 'RegisterWTNRequest',
+  }
 };

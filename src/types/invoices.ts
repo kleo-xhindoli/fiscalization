@@ -2,8 +2,8 @@ import {
   FiscResponseHeader,
   FiscRequestHeaderSubsequent,
 } from './fiscalization';
-import { CurrencyCode } from './currency-codes';
-import { CountryCode } from './country-codes';
+import { CurrencyCode } from './currencyCodes';
+import { CountryCode } from './countryCodes';
 
 // ====================================================
 // Constant values & helper types

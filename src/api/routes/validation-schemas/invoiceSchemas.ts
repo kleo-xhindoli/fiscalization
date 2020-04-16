@@ -9,8 +9,8 @@ import {
   CORRECTIVE_INVOICE_TYPES,
   FEE_TYPES,
 } from '../../../types';
-import { ALLOWED_COUNTRY_CODES } from '../../../types/country-codes';
-import { ALLOWED_CURRENCY_CODES } from '../../../types/currency-codes';
+import { ALLOWED_COUNTRY_CODES } from '../../../types/countryCodes';
+import { ALLOWED_CURRENCY_CODES } from '../../../types/currencyCodes';
 
 const invoiceItemSchema = joi.object({
   name: joi.string().required(),

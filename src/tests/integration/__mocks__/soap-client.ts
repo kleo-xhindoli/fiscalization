@@ -55,6 +55,20 @@ const getMockCashBalanceResponse = (req: any) => {
   ];
 };
 
+const getMockWTNResponse = (req: any) => {
+  return [
+    {
+      attributes: {
+        Id: 'Response',
+        Version: '2',
+      },
+      Header: getResponseHeader(req),
+      FWTNIC: '44444444-4444-4444-4444-444444444444',
+      Signature: {},
+    },
+  ];
+};
+
 export default {
   _events: {},
   _eventsCount: 0,
@@ -92,20 +106,24 @@ export default {
   registerCashDeposit: jest.fn((req, cb) => {
     cb(null, getMockCashBalanceResponse(req));
   }),
-  registerCashDepositAsync: jest.fn(req =>
+  registerCashDepositAsync: jest.fn((req) =>
     Promise.resolve(getMockCashBalanceResponse(req))
   ),
   registerInvoice: jest.fn((req, cb) => {
     cb(null, getMockInvoiceResponse(req));
   }),
-  registerInvoiceAsync: jest.fn(req =>
+  registerInvoiceAsync: jest.fn((req) =>
     Promise.resolve(getMockInvoiceResponse(req))
   ),
   registerTCR: jest.fn((req, cb) => {
     cb(null, getMockTCRResponse(req));
   }),
-  registerTCRAsync: jest.fn(req => Promise.resolve(getMockTCRResponse(req))),
+  registerTCRAsync: jest.fn((req) => Promise.resolve(getMockTCRResponse(req))),
   setSecurity: jest.fn().mockReturnValue({}),
+  registerWTN: jest.fn((req, cb) => {
+    cb(null, getMockWTNResponse(req));
+  }),
+  registerWTNAsync: jest.fn((req) => Promise.resolve(getMockWTNResponse(req))),
   lastRequest: '',
   lastResponse: '',
   /** ---- END OF IMPORTANT SHIT ---- */
