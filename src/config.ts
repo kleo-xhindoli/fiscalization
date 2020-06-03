@@ -21,6 +21,7 @@ const fiscEndpoint = process.env.FISCALIZATION_ENDPOINT as string;
 
 const clients: Clients = {
   [process.env.MAGNUM_API_KEY as string]: { name: 'magnum' },
+  [process.env.BERETTA_API_KEY as string]: { name: 'magnum' },
 };
 
 export default {
