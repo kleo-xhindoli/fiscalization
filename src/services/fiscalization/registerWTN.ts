@@ -75,9 +75,6 @@ function transformRegisterWTNRequest(
           Town: request.body.issuer.town,
         },
       },
-      ':Items': {
-        ':I': transformWTNItems(request.body.items),
-      },
     },
   };
 
@@ -102,6 +99,12 @@ function transformRegisterWTNRequest(
         Address: request.body.carrier.address,
         Town: request.body.carrier.town,
       },
+    };
+  }
+
+  if (request.body.items.length) {
+    soapRequest[':WTN'][':Items'] = {
+      ':I': transformWTNItems(request.body.items),
     };
   }
 
