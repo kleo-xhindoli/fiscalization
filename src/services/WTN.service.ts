@@ -6,9 +6,7 @@ import {
 import { generateIdentificationCode } from '../utils/crypto-utils';
 import config from '../config';
 import uuid from 'uuid/v4';
-import {
-  generateSubsequentFiscHeaders,
-} from '../utils/fiscHeaders';
+import { generateSubsequentFiscHeaders } from '../utils/fiscHeaders';
 import { sendRegisterWTNRequest } from './fiscalization';
 
 export async function registerWarehouseTransferNote(
@@ -20,9 +18,9 @@ export async function registerWarehouseTransferNote(
 
   const { wtnic, wtnicSignature } = generateWTNIC(
     request.issuer.nuis,
-    request.dateTimeCreated,
+    request.issueDateTime,
     request.wtnNum.toString(),
-    request.businUnit,
+    request.businUnitCode,
     fiscSoftwareCode,
     privateKey
   );
@@ -31,7 +29,7 @@ export async function registerWarehouseTransferNote(
     header: generateSubsequentFiscHeaders(request.isAfterDel),
     body: {
       ...request,
-      softNum: fiscSoftwareCode,
+      softCode: fiscSoftwareCode,
       wtnic,
       wtnicSignature,
     },

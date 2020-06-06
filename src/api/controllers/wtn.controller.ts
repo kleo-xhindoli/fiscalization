@@ -13,8 +13,9 @@ export async function handleRegisterWTN(
     const { certificate, privateKey } = req;
     const wtnReq = req.validatedBody as RegisterWarehouseTransferNoteRequest;
 
-    wtnReq.dateTimeCreated = toCentralEuropeanTimezone(wtnReq.dateTimeCreated);
-    wtnReq.transDate = toCentralEuropeanTimezone(wtnReq.transDate);
+    wtnReq.issueDateTime = toCentralEuropeanTimezone(wtnReq.issueDateTime);
+    wtnReq.startDateTime = toCentralEuropeanTimezone(wtnReq.startDateTime);
+    wtnReq.destinDateTime = toCentralEuropeanTimezone(wtnReq.destinDateTime);
 
     const response = await registerWarehouseTransferNote(
       wtnReq,

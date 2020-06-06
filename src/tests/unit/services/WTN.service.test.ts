@@ -4,31 +4,70 @@ import {
 } from '../../../services/WTN.service';
 import { sendRegisterWTNRequest } from '../../../services/fiscalization';
 import { privateKey, certificate, exampleKey } from '../../__test-data__/keys';
+import {
+  WTN_TYPE_WTN,
+  WTN_GROUP_TYPE_FUEL,
+  WTN_TRANSACTION_TYPE_SALES,
+  VEH_OWNERSHIP_OWNER,
+  WTN_LOCATION_TYPE_WAREHOUSE,
+  WTN_LOCATION_TYPE_STORE,
+  RegisterWarehouseTransferNoteRequest,
+} from '../../../types';
 
 describe('Unit | Service | WTN', () => {
-  const wtnRequest = {
-    dateTimeCreated: '2020-04-13T22:42:00+02:00',
-    wtnNum: 1232020,
+  const wtnRequest: RegisterWarehouseTransferNoteRequest = {
+    wtnType: WTN_TYPE_WTN,
+    groupOfGoods: WTN_GROUP_TYPE_FUEL,
+    transaction: WTN_TRANSACTION_TYPE_SALES,
+    issueDateTime: '2020-04-13T22:42:00+02:00',
     operatorCode: 'ax083bc420',
-    businUnit: 'bg517kw842',
-    startAddr: 'Rruga 1',
-    startCity: 'Tirane',
-    destinAddr: 'Rruga 2',
-    destinCity: 'Durres',
+    businUnitCode: 'bg517kw842',
+    wtnOrdNum: 1,
+    wtnNum: '1/2020',
+    fuelPumNum: 'test',
+
+    totPriceWoVAT: 4000,
+    totVATAmt: 200,
+    totPrice: 4200,
+
+    vehOwnership: VEH_OWNERSHIP_OWNER,
+    vehPlates: 'AA200GG',
+
+    startAddr: 'Rruga 3',
+    startCity: 'Durres',
+    startPoint: WTN_LOCATION_TYPE_WAREHOUSE,
+    startDateTime: '2020-04-13T22:42:00+02:00',
+    destinAddr: 'Rruga 6',
+    destinCity: 'Tirane',
+    destinPoint: WTN_LOCATION_TYPE_STORE,
+    destinDateTime: '2020-04-14T00:42:00+02:00',
+
+    isGoodsFlammable: true,
+    isEscortRequired: false,
+
+    packType: 'liquid tank',
+    packNum: 1,
+    itemsNum: 1,
     isAfterDel: false,
-    transDate: '2020-04-13T22:42:00+02:00',
-    carrierId: 'uniq-carrier',
-    vehPlates: 'AA123PP',
     issuer: {
       nuis: 'L41323036D',
-      name: 'John Doe',
+      name: 'Oil SHPK',
+      address: 'Rruga 16',
+      town: 'Tirane',
     },
+
+    // carrier: {
+    //   idNum: 'K21239067K',
+    //   idType: 'ID',
+    //   name: 'John Doe',
+    // },
+
     items: [
       {
-        name: 'Some Item',
+        name: 'Oil',
         code: '123123',
-        unit: 'piece',
-        quantity: 1,
+        unit: 'litre',
+        quantity: 200,
       },
     ],
   };
@@ -61,33 +100,51 @@ describe('Unit | Service | WTN', () => {
       );
 
       expect(response.body).toMatchObject({
-        dateTimeCreated: '2020-04-13T22:42:00+02:00',
-        wtnNum: 1232020,
+        wtnType: 'WTN',
+        groupOfGoods: 'FUEL',
+        transaction: 'SALES',
+        issueDateTime: '2020-04-13T22:42:00+02:00',
         operatorCode: 'ax083bc420',
-        businUnit: 'bg517kw842',
-        startAddr: 'Rruga 1',
-        startCity: 'Tirane',
-        destinAddr: 'Rruga 2',
-        destinCity: 'Durres',
+        businUnitCode: 'bg517kw842',
+        wtnOrdNum: 1,
+        wtnNum: '1/2020',
+        fuelPumNum: 'test',
+        totPriceWoVAT: 4000,
+        totVATAmt: 200,
+        totPrice: 4200,
+        vehOwnership: 'OWNER',
+        vehPlates: 'AA200GG',
+        startAddr: 'Rruga 3',
+        startCity: 'Durres',
+        startPoint: 'WAREHOUSE',
+        startDateTime: '2020-04-13T22:42:00+02:00',
+        destinAddr: 'Rruga 6',
+        destinCity: 'Tirane',
+        destinPoint: 'STORE',
+        destinDateTime: '2020-04-14T00:42:00+02:00',
+        isGoodsFlammable: true,
+        isEscortRequired: false,
+        packType: 'liquid tank',
+        packNum: 1,
+        itemsNum: 1,
         isAfterDel: false,
-        transDate: '2020-04-13T22:42:00+02:00',
-        carrierId: 'uniq-carrier',
-        vehPlates: 'AA123PP',
         issuer: {
           nuis: 'L41323036D',
-          name: 'John Doe',
+          name: 'Oil SHPK',
+          address: 'Rruga 16',
+          town: 'Tirane',
         },
         items: [
           {
-            name: 'Some Item',
+            name: 'Oil',
             code: '123123',
-            unit: 'piece',
-            quantity: 1,
+            unit: 'litre',
+            quantity: 200,
           },
         ],
-        wtnic: '1810A28D31713ECAE6CC4648943CA37D',
+        wtnic: 'C8BB5B851F9A74DA917DA22166504A2A',
         wtnicSignature:
-          '1E81AA623B8D2740E19CBBFD32B0EA638D0B36ACD78EE2177BA0F74E659D960C2AE57A1497E879DE5F1998B2757996E812B815E435959C59E104046F3B3C69D312700E673E354B3717E75C5D2DA72ABEB60C1CF15354D6E87839DE5B2B52145CCBFCADCAA8E6CD1B6A4594AE6BBE5F7220A5205DE85B243C922F035911A2DE428CC2DC5E097E9354609EE84500793CB72424284C95749DCC53DCD34875307C2D68B0F4DFFE44548254891253097BFE5B00615A732F8A2D13D7C258642D0179608D0572F121949836E721116B8D6E590570F12A55FF42E0B5843233B05B3A6C116F5404B4882B7E668EA89887EF5D5BEBAC92E92F9453EB5C9525CF3020D01C4B',
+          '87B837307B858ADF7761F3D707009568748C7B8E10C4D338E316D46FAFAE199E5C306701D58EF9107768860FECDCA3FE119106B8C3C5727782870BC4DB180D0B64D61AAA3750E6A40EF071AAF3DBAF1419233FE2362D0C1E5B46AAAE7EA1A9A590F36A5A581FC098E5F6DA61F5321C559F4A3DA7028CE1D3D59DDD687404912A0CF85E9989C660D1E5A8FA0FEF5727BF6AF95B8D51423D13BB08AAFA3FCC83215DC1C99493E03C8EAEB6C2CDF042B855F243D3B64536A7C971CE9F50B67B4EEBC075AB12639B8609F246F84AE7200597CF35DD3CDD3C7EF7B5331AC5DEFE47DDC98C58973DFBB160BB5214AA1BA99D4B146F4C957F87D5943BFD90B246FAA781',
       });
 
       expect(response.body.FWTNIC).toBe('55555555-5555-5555-5555-555555555555');

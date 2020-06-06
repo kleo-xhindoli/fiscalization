@@ -9,12 +9,8 @@ import {
   FiscConsumptionTaxGroup,
   Fee,
 } from '../../types';
-import Big from 'big.js';
 import { makeRequest, getGeneratedRequestXML } from './makeSOAPRequest';
-
-function toDecimalOrUndefined(value?: number | string): string | undefined {
-  return value ? Big(value).toFixed(2) : undefined;
-}
+import { toDecimalOrUndefined } from './utils';
 
 function transformPayMethods(payMethods: PaymentMethod[]) {
   return payMethods.map(({ amt, type }) => ({
